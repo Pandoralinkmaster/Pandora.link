@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ledger Hardware Wallet USB-OTG Filter -->
+<!-- VID 0x2C97 = Ledger SAS -->
+<resources>
+    <usb-device vendor-id="11415" />  <!-- 0x2C97 Ledger Nano S -->
+    <usb-device vendor-id="11415" product-id="1" />   <!-- Nano S -->
+    <usb-device vendor-id="11415" product-id="16" />  <!-- Nano X -->
+    <usb-device vendor-id="11415" product-id="4" />   <!-- Nano S Plus -->
+    <usb-device vendor-id="11415" product-id="5" />   <!-- Stax -->
+</resources>

@@ -1,0 +1,46 @@
+name: Pandora APK Build
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Java 17 einrichten
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Gradle-Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('**/*.gradle.kts', '**/libs.versions.toml') }}
+
+      - name: Gradlew ausführbar machen
+        run: chmod +x gradlew
+
+      - name: Debug APK bauen
+        run: ./gradlew assembleDebug --no-daemon
+        env:
+          GRADLE_OPTS: "-Xmx4g -Dorg.gradle.daemon=false"
+
+      - name: APK umbenennen
+        run: |
+          mv app/build/outputs/apk/debug/app-debug.apk \
+             app/build/outputs/apk/debug/Pandora.apk
+
+      - name: APK hochladen (Download-Artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pandora-APK
+          path: app/build/outputs/apk/debug/Pandora.apk
+          retention-days: 30

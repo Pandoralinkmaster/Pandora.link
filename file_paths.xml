@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <files-path name="pandora_internal" path="pandora_db/" />
+    <external-files-path name="pandora_external" path="Pandora/" />
+    <cache-path name="pandora_cache" path="pandora_temp/" />
+</paths>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pandora</string>
+    <string name="app_description">Pandora – Sicheres Netzwerk-Betriebssystem für Android</string>
+    <string name="ceo_name">Finn Jona Lischke</string>
+    <string name="ceo_email">finn.jona.lischke@gmail.com</string>
+    <string name="jayjay_wake_word">Pandemonium</string>
+    <string name="host_offline">Host offline</string>
+    <string name="access_locked">Zugriff gesperrt</string>
+    <string name="setup_title">Pandora einrichten</string>
+    <string name="ssd_picker_title">M.2 SSD (exFAT) auswählen</string>
+</resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="pandora_bg">#0A0A0F</color>
+    <color name="pandora_surface">#12121A</color>
+    <color name="pandora_purple">#E040FB</color>
+    <color name="pandora_cyan">#00BCD4</color>
+    <color name="pandora_gold">#FFD700</color>
+    <color name="pandora_green">#00E676</color>
+    <color name="pandora_red">#FF1744</color>
+    <color name="pandora_orange">#FF6D00</color>
+    <color name="pandora_white">#FFFFFFFF</color>
+    <color name="pandora_gray">#888888</color>
+</resources>

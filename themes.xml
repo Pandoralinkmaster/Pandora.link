@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Pandora" parent="android:Theme.Material.NoTitleBar">
+        <item name="android:windowBackground">@color/pandora_bg</item>
+        <item name="android:statusBarColor">@color/pandora_bg</item>
+        <item name="android:navigationBarColor">@color/pandora_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:colorPrimary">@color/pandora_purple</item>
+        <item name="android:colorPrimaryDark">@color/pandora_bg</item>
+        <item name="android:colorAccent">@color/pandora_purple</item>
+        <item name="android:textColorPrimary">@color/pandora_white</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+</resources>

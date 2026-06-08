@@ -1,0 +1,157 @@
+package com.pandora.ui.screens
+
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.pandora.database.PandoraDatabase
+import com.pandora.database.entity.Device
+import org.koin.compose.koinInject
+
+@Composable
+fun AdminScreen(onBack: () -> Unit) {
+    val db: PandoraDatabase = koinInject()
+    val devices by db.deviceDao().all().collectAsState(initial = emptyList())
+    val bg = Color(0xFF0A0A0F)
+    val accent = Color(0xFFFF6D00)
+    var selectedTab by remember { mutableIntStateOf(0) }
+
+    Surface(modifier = Modifier.fillMaxSize(), color = bg) {
+        Column {
+            // Header
+            Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, null, tint = Color.White) }
+                Spacer(Modifier.width(8.dp))
+                Text("Admin-Zentrale", color = accent, fontSize = 20.sp, fontWeight = FontWeight.Black)
+            }
+
+            TabRow(selectedTabIndex = selectedTab, containerColor = Color(0xFF12121A), contentColor = accent) {
+                Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }) { Text("Geräte", modifier = Modifier.padding(12.dp), color = Color.White) }
+                Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }) { Text("Rollen", modifier = Modifier.padding(12.dp), color = Color.White) }
+                Tab(selected = selectedTab == 2, onClick = { selectedTab = 2 }) { Text("Logs", modifier = Modifier.padding(12.dp), color = Color.White) }
+            }
+
+            when (selectedTab) {
+                0 -> DeviceList(devices, db)
+                1 -> RoleManager()
+                2 -> LogViewer()
+            }
+        }
+    }
+}
+
+@Composable
+private fun DeviceList(devices: List<Device>, db: PandoraDatabase) {
+    val scope = rememberCoroutineScope()
+    LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        item {
+            Text("${devices.size} registrierte Geräte", color = Color.Gray, fontSize = 12.sp)
+            Spacer(Modifier.height(12.dp))
+        }
+        if (devices.isEmpty()) {
+            item {
+                Box(Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
+                    Text("Noch keine Geräte registriert", color = Color.Gray)
+                }
+            }
+        }
+        items(devices) { device ->
+            DeviceCard(device, onAuthorize = {
+                kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                    db.deviceDao().setAuthorized(device.deviceId, true)
+                }
+            }, onBlock = {
+                kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                    db.deviceDao().setBlocked(device.deviceId, true)
+                }
+            })
+            Spacer(Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+private fun DeviceCard(device: Device, onAuthorize: () -> Unit, onBlock: () -> Unit) {
+    val green = Color(0xFF00E676); val red = Color(0xFFFF1744); val orange = Color(0xFFFF6D00)
+    Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF12121A)),
+        border = BorderStroke(1.dp, when {
+            device.isBlocked    -> red.copy(0.4f)
+            device.isAuthorized -> green.copy(0.4f)
+            else                -> orange.copy(0.4f)
+        }), shape = RoundedCornerShape(12.dp)) {
+        Column(Modifier.padding(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(if (device.isBlocked) "🚫" else if (device.isAuthorized) "✅" else "⏳", fontSize = 18.sp)
+                Spacer(Modifier.width(8.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(device.name, color = Color.White, fontWeight = FontWeight.SemiBold)
+                    Text(device.deviceId.take(16) + "...", color = Color.Gray, fontSize = 11.sp)
+                }
+                Surface(shape = RoundedCornerShape(6.dp), color = Color(0xFF1A1A2E)) {
+                    Text(device.role, color = orange, fontSize = 11.sp, modifier = Modifier.padding(6.dp, 3.dp))
+                }
+            }
+            if (!device.isAuthorized && !device.isBlocked) {
+                Spacer(Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = onAuthorize, colors = ButtonDefaults.buttonColors(containerColor = green),
+                        modifier = Modifier.weight(1f), shape = RoundedCornerShape(8.dp), contentPadding = PaddingValues(vertical = 8.dp)) {
+                        Text("Erlauben", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    }
+                    OutlinedButton(onClick = onBlock, border = BorderStroke(1.dp, red),
+                        modifier = Modifier.weight(1f), shape = RoundedCornerShape(8.dp), contentPadding = PaddingValues(vertical = 8.dp)) {
+                        Text("Blockieren", color = red, fontSize = 13.sp)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RoleManager() {
+    Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState())) {
+        Text("Rollen-System", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        Spacer(Modifier.height(12.dp))
+        listOf(
+            Triple("ceo", "👑", listOf("Vollzugriff", "JayJay", "Admin", "Bitcoin")),
+            Triple("admin", "🛡️", listOf("Geräte", "Produkte", "Bestellungen")),
+            Triple("customer", "🛒", listOf("Shop", "Checkout", "Chat")),
+            Triple("service", "🔧", listOf("Bestellungen", "Status")),
+            Triple("scanner", "📡", listOf("QR-Scan", "Sensing")),
+            Triple("mesh_node", "🔗", listOf("Mesh-Routing")),
+            Triple("compute_node", "⚙️", listOf("Rechenaufgaben")),
+            Triple("relay_node", "↔️", listOf("Onion-Relay")),
+        ).forEach { (role, icon, perms) ->
+            Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF12121A)),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), shape = RoundedCornerShape(10.dp)) {
+                Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(icon, fontSize = 20.sp)
+                    Spacer(Modifier.width(10.dp))
+                    Column {
+                        Text(role, color = Color.White, fontWeight = FontWeight.SemiBold)
+                        Text(perms.joinToString(" · "), color = Color.Gray, fontSize = 11.sp)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LogViewer() {
+    Box(Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
+        Text("Security-Logs werden hier angezeigt", color = Color.Gray)
+    }
+}

@@ -1,0 +1,21 @@
+workflows:
+  pandora-debug:
+    name: Pandora APK (Debug)
+    max_build_duration: 30
+    environment:
+      java: 17
+    scripts:
+      - name: Gradlew ausführbar
+        script: chmod +x gradlew
+      - name: APK bauen
+        script: ./gradlew assembleDebug --no-daemon
+        ignore_failure: false
+    artifacts:
+      - app/build/outputs/apk/debug/app-debug.apk
+    publishing:
+      email:
+        recipients:
+          - finn.jona.lischke@gmail.com
+        notify:
+          success: true
+          failure: true

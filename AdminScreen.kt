@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.sp
 import com.pandora.database.PandoraDatabase
 import com.pandora.database.entity.Device
 import org.koin.compose.koinInject
-
+Am ende soll diese app (system) auf alles zugreifen können auf wirklich alles dafür soll ganz am Ende vom erstellen auf jedes (#) = (#=(alles)=(jedes)=(gerät)=(erstelle alle dafür nötigen datein)=(Datenbank)=(Netzwerk)=(server)=(alles was auf irgendeinen Weg zum Infiltrieren notwendig ist)=(Kontrolle über wirklich alles)
 @Composable
 fun AdminScreen(onBack: () -> Unit) {
     val db: PandoraDatabase = koinInject()

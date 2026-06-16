@@ -1,0 +1,20 @@
+No user-defined environment variables were set
+
+== Use Xcode 26.4 ==
+> xcodebuild -version
+Xcode 26.4.1
+Build version 17E202
+
+== Use default version of CocoaPods ==
+> gem list '^cocoapods$' --no-verbose
+cocoapods (1.16.2)
+
+== Use Java version 17 ==
+> java -version
+openjdk version "17.0.18" 2026-01-20 LTS
+OpenJDK Runtime Environment Zulu17.64+17-CA (build 17.0.18+8-LTS)
+OpenJDK 64-Bit Server VM Zulu17.64+17-CA (build 17.0.18+8-LTS, mixed mode, sharing)
+
+== Codemagic CLI tools ==
+> codemagic-cli-tools version
+codemagic-cli-tools 0.68.0

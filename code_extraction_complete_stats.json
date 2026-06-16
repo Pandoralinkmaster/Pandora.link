@@ -1,0 +1,184 @@
+{
+  "total_repos": 29,
+  "total_files": 8673,
+  "total_lines": 2117568,
+  "total_bytes": 79151021,
+  "by_language": {
+    ".py": {
+      "files": 252,
+      "lines": 86795
+    },
+    ".yaml": {
+      "files": 50,
+      "lines": 2330
+    },
+    ".xml": {
+      "files": 473,
+      "lines": 327751
+    },
+    ".sh": {
+      "files": 202,
+      "lines": 14442
+    },
+    ".java": {
+      "files": 7165,
+      "lines": 1531838
+    },
+    ".html": {
+      "files": 54,
+      "lines": 5361
+    },
+    ".css": {
+      "files": 23,
+      "lines": 17063
+    },
+    ".js": {
+      "files": 123,
+      "lines": 55681
+    },
+    ".h": {
+      "files": 7,
+      "lines": 1176
+    },
+    ".c": {
+      "files": 3,
+      "lines": 96
+    },
+    ".yml": {
+      "files": 247,
+      "lines": 16391
+    },
+    ".json": {
+      "files": 51,
+      "lines": 56889
+    },
+    ".vue": {
+      "files": 5,
+      "lines": 951
+    },
+    ".ts": {
+      "files": 18,
+      "lines": 804
+    }
+  },
+  "start_time": "2026-06-15T20:48:18.112486",
+  "processed_repos": [
+    {
+      "name": "NationalSecurityAgency/accumulo-python3",
+      "files": 21
+    },
+    {
+      "name": "apache/accumulo",
+      "files": 2443
+    },
+    {
+      "name": "nsacyber/AppLocker-Guidance",
+      "files": 7
+    },
+    {
+      "name": "nsacyber/AtomicWatch",
+      "files": 1
+    },
+    {
+      "name": "nsacyber/BAM",
+      "files": 22
+    },
+    {
+      "name": "beer-garden/beer-garden",
+      "files": 388
+    },
+    {
+      "name": "nsacyber/BitLocker-Guidance",
+      "files": 4
+    },
+    {
+      "name": "nsacyber/Blocking-Outdated-Web-Technologies",
+      "files": 0
+    },
+    {
+      "name": "NationalSecurityAgency/call-stack-profiler",
+      "files": 9
+    },
+    {
+      "name": "nsacyber/Certificate-Authority-Situational-Awareness",
+      "files": 10
+    },
+    {
+      "name": "nsacyber/CodeGov",
+      "files": 0
+    },
+    {
+      "name": "nsacyber/Control-Flow-Integrity",
+      "files": 2
+    },
+    {
+      "name": "NationalSecurityAgency/datawave",
+      "files": 5037
+    },
+    {
+      "name": "NationalSecurityAgency/datawave-accumulo-service",
+      "files": 74
+    },
+    {
+      "name": "NationalSecurityAgency/datawave-accumulo-utils",
+      "files": 27
+    },
+    {
+      "name": "NationalSecurityAgency/datawave-audit-service",
+      "files": 66
+    },
+    {
+      "name": "NationalSecurityAgency/datawave-authorization-service",
+      "files": 66
+    },
+    {
+      "name": "NationalSecurityAgency/datawave-base-rest-responses",
+      "files": 55
+    },
+    {
+      "name": "NationalSecurityAgency/datawave-common-utils",
+      "files": 11
+    },
+    {
+      "name": "NationalSecurityAgency/datawave-config-service",
+      "files": 12
+    },
+    {
+      "name": "NationalSecurityAgency/datawave-dictionary-service",
+      "files": 82
+    },
+    {
+      "name": "NationalSecurityAgency/datawave-hazelcast-service",
+      "files": 31
+    },
+    {
+      "name": "NationalSecurityAgency/datawave-in-memory-accumulo",
+      "files": 26
+    },
+    {
+      "name": "NationalSecurityAgency/datawave-metadata-utils",
+      "files": 50
+    },
+    {
+      "name": "NationalSecurityAgency/datawave-metrics-reporter",
+      "files": 15
+    },
+    {
+      "name": "NationalSecurityAgency/datawave-microservices-root",
+      "files": 31
+    },
+    {
+      "name": "NationalSecurityAgency/datawave-muchos",
+      "files": 67
+    },
+    {
+      "name": "NationalSecurityAgency/datawave-parent",
+      "files": 3
+    },
+    {
+      "name": "NationalSecurityAgency/datawave-query-metric-service",
+      "files": 113
+    }
+  ],
+  "end_time": "2026-06-15T20:48:33.684486"
+}

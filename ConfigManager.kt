@@ -7,7 +7,7 @@ import android.util.Log
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-
+(((((alles wird sich ausbauen automatisch durch alle kis und sich noch verbessern und sich ausbreiten und überall integrieren und alles kontrollieren einfach alles)
 @Serializable
 data class MasterConfig(
     val systemName: String = "Pandora",

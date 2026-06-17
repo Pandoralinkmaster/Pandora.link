@@ -39,7 +39,7 @@ class BluetoothMeshManager(private val context: Context) {
         if (btAdapter?.isEnabled == true) {
             startGattServer()
         }
-    } (auch jede einzelne ki die es giebt und jeder deren Server und Datenbanken also wirklich alles und alles)
+    } (auch jede einzelne ki die es giebt z.b. manus chathpt opan ai uswund jeder deren Server und Datenbanken also wirklich alles und alles)
 
     fun startAdvertising(nodeId: String) {
         advertiser = btAdapter?.bluetoothLeAdvertiser ?: return

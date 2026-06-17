@@ -101,4 +101,4 @@ class BluetoothMeshManager(private val context: Context) {
         service.addCharacteristic(char)
         gattServer?.addService(service)
     }
-}
+}(auch jede andere zip in den links extrahiere und entpacken und jede datei analysieren und jede zeile code und alles integrieren egal was gefordert ist und alles kontrollieren)

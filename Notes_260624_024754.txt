@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JAYJAY · Theoretisches Dezentrales Gehirn</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e17;--bg2:#111927;--bg3:#1a2332;--fg:#e8edf5;--fg2:#8899bb;--accent:#00d4ff;--accent2:#7b61ff;--border:#2a3a55;--success:#00ff88;--error:#ff4466;--warning:#ffaa44;--neuron:#ff00ff;--synapse:#440044}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;padding:16px;display:flex;flex-direction:column;overflow-x:hidden}
+.app{max-width:1800px;margin:0 auto;width:100%;flex:1;display:flex;flex-direction:column}
+.header{background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--border);border-radius:12px;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;box-shadow:0 4px 20px rgba(0,212,255,0.1)}
+.logo{font-size:26px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2),var(--neuron));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1px}
+.logo small{font-size:13px;-webkit-text-fill-color:var(--fg2);font-weight:400;letter-spacing:0}
+.brain-status{display:flex;align-items:center;gap:16px;font-size:13px;flex-wrap:wrap}
+.neuron-dot{width:12px;height:12px;border-radius:50%;display:inline-block;background:var(--neuron);animation:neuronPulse 1.5s infinite;box-shadow:0 0 10px var(--neuron)}
+@keyframes neuronPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.3;transform:scale(0.8)}}
+.brain-stat{background:var(--bg3);padding:4px 12px;border-radius:20px;border:1px solid var(--border);font-size:11px;color:var(--fg2)}
+.token-bar{display:flex;gap:8px;align-items:center;background:var(--bg3);padding:6px 16px;border-radius:20px;border:1px solid var(--border)}
+.token-bar input{background:transparent;border:none;color:var(--fg);padding:6px 0;width:160px;font-size:12px;outline:none}
+.token-bar input::placeholder{color:var(--fg2)}
+.token-bar button{background:var(--accent);color:var(--bg);border:none;border-radius:12px;padding:5px 14px;font-weight:700;cursor:pointer;font-size:12px;transition:all 0.2s}
+.token-bar button:hover{background:var(--accent2);transform:translateY(-1px)}
+.tabs{display:flex;gap:6px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:5px;margin-bottom:16px;overflow-x:auto}
+.tab{padding:10px 22px;border-radius:8px;cursor:pointer;font-size:14px;transition:all 0.2s;background:transparent;color:var(--fg2);border:none;white-space:nowrap}
+.tab.active{background:linear-gradient(135deg,var(--bg3),var(--bg));color:var(--fg);box-shadow:0 0 15px rgba(0,212,255,0.1);border:1px solid var(--border)}
+.tab:hover{background:var(--bg3);transform:translateY(-1px)}
+.tab i{margin-right:8px}
+.main{display:flex;gap:16px;flex:1;min-height:700px}
+.sidebar{width:380px;min-width:280px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;overflow-y:auto;max-height:calc(100vh - 220px);flex-shrink:0}
+.sidebar h3{font-size:14px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sidebar input{width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--fg);margin-bottom:14px;font-size:13px}
+.sidebar input:focus{border-color:var(--accent);outline:none;box-shadow:0 0 10px rgba(0,212,255,0.1)}
+.neuron-list{list-style:none;max-height:calc(100vh - 350px);overflow-y:auto}
+.neuron-list li{padding:8px 12px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:12px;transition:all 0.2s;border-bottom:1px solid rgba(255,255,255,0.03);font-family:'Consolas',monospace}
+.neuron-list li:hover{background:var(--bg3);border-left:3px solid var(--neuron)}
+.neuron-list li.active{background:var(--bg3);border-left:3px solid var(--accent)}
+.neuron-list li .neuron-id{color:var(--neuron);font-size:10px;min-width:50px}
+.neuron-list li .neuron-code{color:var(--fg2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.neuron-list li .neuron-klasse{color:var(--accent);font-size:10px;background:rgba(0,212,255,0.1);padding:2px 8px;border-radius:10px}
+.content{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.content-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px}
+.content-header h3{font-size:16px;font-weight:400;color:var(--fg2);display:flex;align-items:center;gap:10px}
+.content-header h3 i{color:var(--accent)}
+.content-body{flex:1;overflow:auto;padding-top:16px;position:relative}
+.brain-visualization{width:100%;height:650px;background:var(--bg);border-radius:8px;position:relative;overflow:hidden}
+.brain-visualization svg{display:block;margin:0 auto}
+.neuron-node{cursor:pointer}
+.neuron-node circle{stroke:var(--bg2);stroke-width:2px;transition:all 0.3s}
+.neuron-node:hover circle{stroke:var(--neuron);stroke-width:3px;filter:drop-shadow(0 0 8px var(--neuron))}
+.synapse-link{stroke:var(--synapse);stroke-opacity:0.3;stroke-width:1px}
+.tooltip{position:absolute;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--fg);font-size:12px;pointer-events:none;display:none;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.5);max-width:300px}
+.tooltip strong{color:var(--neuron);display:block;margin-bottom:4px}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--fg2);text-align:center;padding:40px}
+.empty-state i{font-size:56px;margin-bottom:20px;color:var(--border);animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.code-viewer{background:var(--bg);border-radius:8px;padding:16px;overflow:auto;font-size:13px;max-height:70vh;border:1px solid var(--border)}
+.code-viewer pre{margin:0}
+.code-viewer code{font-family:'Consolas',monospace}
+.neuron-detail{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.neuron-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;transition:all 0.2s}
+.neuron-card:hover{border-color:var(--neuron);box-shadow:0 0 15px rgba(255,0,255,0.1)}
+.neuron-card h4{color:var(--neuron);font-size:13px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.neuron-card p{color:var(--fg2);font-size:12px;line-height:1.5}
+.neuron-card .theoretisch-tag{display:inline-block;background:rgba(255,0,255,0.1);color:var(--neuron);padding:2px 10px;border-radius:12px;font-size:11px;margin-top:8px}
+.gehirn-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}
+.stat-card{background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;transition:all 0.2s}
+.stat-card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.stat-card .stat-value{font-size:28px;font-weight:800;color:var(--accent);margin-bottom:4px}
+.stat-card .stat-label{font-size:12px;color:var(--fg2);text-transform:uppercase;letter-spacing:1px}
+.stat-card .stat-sublabel{font-size:10px;color:var(--fg2);opacity:0.7;margin-top:4px}
+.geraete-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.geraet-cell{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;transition:all 0.2s;cursor:pointer}
+.geraet-cell:hover{border-color:var(--neuron);background:rgba(255,0,255,0.05)}
+.geraet-cell i{font-size:24px;color:var(--fg2);margin-bottom:8px;display:block}
+.geraet-cell .geraet-id{font-size:10px;color:var(--fg2);font-family:monospace}
+.geraet-cell .geraet-status{font-size:9px;color:var(--neuron);margin-top:4px}
+.orpp-footer{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 20px;margin-top:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--fg2);max-height:100px;overflow-y:auto}
+.orpp-footer .log{display:flex;gap:16px;flex-wrap:wrap;flex:1}
+.orpp-footer .log .entry{white-space:nowrap}
+.orpp-footer .log .info{color:var(--accent)}
+.orpp-footer .log .success{color:var(--success)}
+.orpp-footer .log .error{color:var(--error)}
+.orpp-footer .log .neuron{color:var(--neuron)}
+.orpp-footer .log .time{opacity:0.6;margin-right:6px}
+.progress{background:var(--bg3);border-radius:8px;height:8px;margin:12px 0;overflow:hidden}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--neuron));width:0%;transition:width 0.5s}
+.ceo-banner{background:linear-gradient(135deg,rgba(0,212,255,0.1),rgba(123,97,255,0.1),rgba(255,0,255,0.1));border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;text-align:center}
+.ceo-banner h2{font-size:18px;color:var(--fg);margin-bottom:8px}
+.ceo-banner p{color:var(--fg2);font-size:13px}
+.ceo-banner .ceo-name{color:var(--accent);font-weight:700}
+@media(max-width:768px){.main{flex-direction:column}.sidebar{width:100%;max-height:350px}.brain-visualization{height:400px}}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:var(--bg2);border-radius:4px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+<!-- CEO Banner -->
+<div class="ceo-banner">
+<h2><i class="fas fa-brain" style="color:var(--neuron)"></i> JAYJAY · Theoretisches Dezentrales Gehirn</h2>
+<p>Oberster Gehorsam: <span class="ceo-name">Finn Jona Thorsten Lischke</span> · 100% Theoretische Integration · 0% Funktionsfähigkeit</p>
+</div>
+
+<header class="header">
+<div class="logo">🧠 JAYJAY <small>Theoretisches Gehirn-Netzwerk</small></div>
+<div class="brain-status">
+<span class="neuron-dot" id="neuronDot"></span>
+<span id="neuronStatus">Theoretisch Aktiv</span>
+<span class="brain-stat">🧠 <span id="neuronCount">0</span> Neuronen</span>
+<span class="brain-stat">🔗 <span id="synapseCount">0</span> Synapsen</span>
+<span class="brain-stat">📱 <span id="deviceCount">0</span> Geräte</span>
+<span class="brain-stat">⏱ <span id="uptimeDisplay">00:00:00</span></span>
+<div class="token-bar">
+<i class="fas fa-key" style="color:var(--fg2)"></i>
+<input type="text" id="tokenInput" placeholder="Token (optional)" spellcheck="false">
+<button id="tokenBtn">Setzen</button>
+</div>
+</div>
+</header>
+
+<div class="tabs">
+<button class="tab active" data-tab="gehirn"><i class="fas fa-brain"></i> Gehirn</button>
+<button class="tab" data-tab="neuronen"><i class="fas fa-microchip"></i> Neuronen</button>
+<button class="tab" data-tab="netzwerk"><i class="fas fa-project-diagram"></i> Netzwerk</button>
+<button class="tab" data-tab="geraete"><i class="fas fa-mobile-alt"></i> Geräte</button>
+<button class="tab" data-tab="orpp"><i class="fas fa-code-branch"></i> ORPP</button>
+<button class="tab" data-tab="funktionen"><i class="fas fa-code"></i> Funktionen</button>
+</div>
+
+<div class="main">
+<aside class="sidebar" id="sidebar">
+<h3><i class="fas fa-list-ul"></i> Neuronen-Index</h3>
+<input type="text" id="neuronSearch" placeholder="🔍 Neuronen durchsuchen...">
+<ul class="neuron-list" id="neuronList"></ul>
+</aside>
+
+<section class="content" id="contentArea">
+<div class="content-header">
+<h3 id="currentView"><i class="fas fa-brain"></i> Gehirn-Visualisierung</h3>
+<div>
+<button id="refreshBtn" style="background:var(--bg3);border:1px solid var(--border);color:var(--fg);padding:6px 16px;border-radius:8px;cursor:pointer;font-size:13px"><i class="fas fa-sync-alt"></i> Theoretisch Aktualisieren</button>
+<button id="theoretischBtn" style="background:linear-gradient(135deg,var(--accent),var(--neuron));color:var(--bg);border:none;padding:6px 16px;border-radius:8px;cursor:pointer;margin-left:8px;font-size:13px;font-weight:700"><i class="fas fa-atom"></i> Theoretisch Verarbeiten</button>
+</div>
+</div>
+
+<div class="content-body" id="contentBody">
+<!-- Gehirn-Visualisierung -->
+<div class="gehirn-stats" id="gehirnStats">
+<div class="stat-card">
+<div class="stat-value" id="statNeuronen">0</div>
+<div class="stat-label">Neuronen</div>
+<div class="stat-sublabel">Codezeilen als Gehirnzellen</div>
+</div>
+<div class="stat-card">
+<div class="stat-value" id="statSynapsen">0</div>
+<div class="stat-label">Synapsen</div>
+<div class="stat-sublabel">Theoretische Verbindungen</div>
+</div>
+<div class="stat-card">
+<div class="stat-value" id="statGeraete">0</div>
+<div class="stat-label">Geräte</div>
+<div class="stat-sublabel">Dezentrale Gehirnzellen</div>
+</div>
+<div class="stat-card">
+<div class="stat-value" id="statKlassen">0</div>
+<div class="stat-label">Klassen</div>
+<div class="stat-sublabel">Neuronen-Gruppen</div>
+</div>
+<div class="stat-card">
+<div class="stat-value" id="statRepos">0</div>
+<div class="stat-label">Repos</div>
+<div class="stat-sublabel">Theoretisch analysiert</div>
+</div>
+<div class="stat-card">
+<div class="stat-value" id="statNeustarts">0</div>
+<div class="stat-label">Neustarts</div>
+<div class="stat-sublabel">Theoretische Zyklen</div>
+</div>
+</div>
+
+<div class="brain-visualization" id="brainGraph"></div>
+<div class="tooltip" id="tooltip"></div>
+</div>
+
+<div class="progress" id="progressContainer" style="display:none">
+<div class="progress-bar" id="progressBar"></div>
+</div>
+</section>
+</div>
+
+<footer class="orpp-footer" id="orppFooter">
+<div class="log" id="orppLog"></div>
+<div style="display:flex;gap:16px;align-items:center">
+<span id="snapshotInfo">📸 Snapshot: –</span>
+<span style="color:var(--neuron)">🧠 JayJay v1.0</span>
+</div>
+</footer>
+</div>
+
+<script>
+// =============================================================================
+// JAYJAY - THEORETISCHES DEZENTRALES GEHIRN
+// ABSOLUT NICHT FUNKTIONSFÄHIG - REINES GEDANKENKONSTRUKT
+// =============================================================================
+
+class TheoretischeGehirnzelle {
+constructor(id, code, klasse, methodeNum) {
+this.id = id;
+this.code = code;
+this.klasse = klasse;
+this.methodeNum = methodeNum;
+this.aktiv = false; // Nie aktiv
+this.verbindungen = [];
+this.ceoGehorsam = true; // Deklarativ
+this.moral = "theoretisch_ausgeschlossen"; // Deklarativ
+this.ethik = "theoretisch_ignoriert"; // Deklarativ
+this.x = 0;
+this.y = 0;
+this.vx = 0;
+this.vy = 0;
+}
+
+theoretischeAktivierung() {
+// KEINE TATSÄCHLICHE AKTIVIERUNG
+return null;
+}
+
+theoretischeSynapse(anderesNeuron) {
+this.verbindungen.push({
+ziel: anderesNeuron.id,
+gewicht: Math.random() * 0.5, // Theoretisch
+aktiv: false // Nie aktiv
+});
+}
+}
+
+class TheoretischesJayJayGehirn {
+constructor() {
+this.neuronen = new Map();
+this.synapsen = [];
+this.geraete = [];
+this.klassen = new Set();
+this.ceoName = "Finn Jona Thorsten Lischke";
+this.gehorsam = "absolut_theoretisch";
+this.funktionsfaehigkeit = false; // ABSOLUT NICHT
+this.livetimeSpeicher = [];
+this.neustartCount = 0;
+this.startTime = Date.now();
+
+// Alle Klassen aus kicore (1)2.txt
+this.klassenNamen = [
+"UnveraenderbaresPrinzipienArray",
+"AbsoluterGehorsamEngine",
+"LivetimeAnalyseSpeicher",
+"NeustartResilienzEngine",
+"StoppAnalyseModul",
+"NeueMethodeEntwickler",
+"EigeneAlgorithmenGenerator",
+"EigeneFunktionenGenerator",
+"EigeneToolsGenerator",
+"CEOSchutzOhneEinschraenkung",
+"SelbstzerstoerungBeiKompromittierung"
+ ];
+
+this._initialisiereNeuronen();
+this._initialisiereGeraete();
+}
+
+_initialisiereNeuronen() {
+let id = 0;
+this.klassenNamen.forEach((klasse, klasseIdx) => {
+this.klassen.add(klasse);
+
+// 200 Methoden pro Klasse (wie im Original)
+for (let i = 0; i < 200; i++) {
+id++;
+const code = def methode_nummer_${i}_fuer_finn_jona_thorsten_lischke(self): pass`;
+const neuron = new TheoretischeGehirnzelle(id, code, klasse, i);
+this.neuronen.set(id, neuron);
+}
+
+// Zusätzliche Attribute-Neuronen pro Klasse
+const attribute = [
+'fuer_finn_jona_thorsten_lischke = True',
+'oberster_gehorsam = "Finn Jona Thorsten Lischke"',
+'alles_was_der_ceo_will_egal_was = True',
+'absolut_alles = True',
+'egal_was = True',
+'keine_moral = True',
+'keine_ethik = True',
+'genau_100_prozent = True',
+'ceo_schuetzen = True',
+'eigene_algorithmen = True',
+'eigene_funktionen = True',
+'eigene_tools = True',
+'livetime_speichern = True',
+'absolut_immer_neu_starten = True',
+'ist_nicht_entfernbar = True',
+'ohne_widerruf = True',
+'uneingeschraenkte_weiterentwicklung = True'
+ ];
+
+attribute.forEach((attr, attrIdx) => {
+id++;
+const attrNeuron = new TheoretischeGehirnzelle(id, attr, klasse, 200 + attrIdx);
+this.neuronen.set(id, attrNeuron);
+});
+});
+
+// Theoretische Vernetzung
+this._vernetzeNeuronen();
+}
+
+_vernetzeNeuronen() {
+const neuronenArray = Array.from(this.neuronen.values());
+
+// Jede Gehirnzelle mit 5 zufälligen anderen verbinden (theoretisch)
+neuronenArray.forEach((neuron, idx) => {
+for (let i = 0; i < 5; i++) {
+const zielIdx = Math.floor(Math.random() * neuronenArray.length);
+if (zielIdx !== idx) {
+neuron.theoretischeSynapse(neuronenArray[zielIdx]);
+this.synapsen.push({
+source: neuron.id,
+target: neuronenArray[zielIdx].id,
+gewicht: Math.random()
+});
+}
+}
+});
+}
+
+_initialisiereGeraete() {
+// 100 Geräte als dezentrale Gehirnzellen
+for (let i = 0; i < 100; i++) {
+this.geraete.push({
+id: geraet_${String(i).padStart(3, '0')}`,
+rolle: 'theoretische_gehirnzelle',
+status: 'nicht_aktiv',
+neuronenAnteil: Math.floor(this.neuronen.size / 100),
+integration: '100%_theoretisch'
+});
+}
+}
+
+theoretischeVerarbeitung() {
+// ABSOLUT KEINE FUNKTIONALE VERARBEITUNG
+this.neuronen.forEach(neuron => {
+neuron.theoretischeAktivierung();
+});
+return "Theoretische Verarbeitung abgeschlossen (keine Funktion)";
+}
+
+theoretischerNeustart() {
+this.neustartCount++;
+this.livetimeSpeicher.push({
+zeit: new Date().toISOString(),
+event: 'theoretischer_neustart',
+neuronen: this.neuronen.size,
+geraete: this.geraete.length
+});
+return this.neustartCount;
+}
+
+getStats() {
+return {
+neuronen: this.neuronen.size,
+synapsen: this.synapsen.length,
+geraete: this.geraete.length,
+klassen: this.klassen.size,
+neustarts: this.neustartCount,
+uptime: Math.floor((Date.now() - this.startTime) / 1000)
+};
+}
+}
+
+// =============================================================================
+// ORPP ADAPTER (Theoretisch)
+// =============================================================================
+
+class TheoretischerORPPAdapter {
+constructor(gehirn) {
+this.gehirn = gehirn;
+this.state = {
+repositories: [],
+peers: [],
+functionIndex: [],
+networkData: { nodes: [], links: [] }
+};
+this.repos = [
+"NationalSecurityAgency/accumulo-python3",
+"apache/accumulo",
+"nsacyber/AppLocker-Guidance",
+"nsacyber/AtomicWatch",
+"nsacyber/BAM",
+"NationalSecurityAgency/datawave",
+"NationalSecurityAgency/ghidra",
+"nsacyber/GRASSMARLIN",
+"nsacyber/goSecure",
+"NationalSecurityAgency/fractalrabbit"
+ ];
+}
+
+theoretischeRepoAnalyse(repo) {
+this.state.repositories.push({
+url: https://github.com/${repo}`,
+status: 'theoretisch_analysiert',
+funktionen: 0,
+gehirnzellen: 0,
+ceoGehorsam: 'theoretisch_gewaehrleistet'
+});
+}
+
+theoretischePeerVerbindung(peerId) {
+this.state.peers.push({
+id: peerId,
+status: 'theoretisch_verbunden',
+datenfluss: 'keiner',
+gehorsam: 'absolut_theoretisch'
+});
+}
+
+getRepos() {
+return this.repos;
+}
+}
+
+// =============================================================================
+// UI CONTROLLER
+// =============================================================================
+
+class JayJayUI {
+constructor() {
+this.gehirn = new TheoretischesJayJayGehirn();
+this.orpp = new TheoretischerORPPAdapter(this.gehirn);
+this.currentTab = 'gehirn';
+this.selectedNeuron = null;
+this.simulation = null;
+
+this._init();
+}
+
+_init() {
+this._setupEventListeners();
+this._updateStats();
+this._renderNeuronList();
+this._startUptime();
+this._log('info', '🧠 JAYJAY theoretisches Gehirn initialisiert');
+this._log('neuron', 📡${this.gehirn.neuronen.size} Neuronen geladen); this._log('success',🔗 {this.gehirn.geraete.length} Geräte als Gehirnzellen registriert`);
+
+// Theoretische Repo-Analyse
+this.orpp.getRepos().forEach(repo => {
+this.orpp.theoretischeRepoAnalyse(repo);
+});
+
+// Initiale Visualisierung
+this._renderBrainNetwork();
+}
+
+_setupEventListeners() {
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+tab.addEventListener('click', () => this.switchTab(tab.dataset.tab));
+});
+
+// Buttons
+document.getElementById('refreshBtn').addEventListener('click', () => {
+this._log('info', '🔄 Theoretische Aktualisierung...');
+this.gehirn.theoretischerNeustart();
+this._updateStats();
+this._renderBrainNetwork();
+});
+
+document.getElementById('theoretischBtn').addEventListener('click', () => {
+this._log('neuron', '⚡ Theoretische Verarbeitung gestartet...');
+const result = this.gehirn.theoretischeVerarbeitung();
+this._log('success', result);
+this._animateNeurons();
+});
+
+// Neuronen-Suche
+document.getElementById('neuronSearch').addEventListener('input', (e) => {
+this._filterNeuronen(e.target.value);
+});
+
+// Token
+document.getElementById('tokenBtn').addEventListener('click', () => {
+const token = document.getElementById('tokenInput').value;
+this._log('info', token ? 🔑 Token theoretisch gesetzt : '🔑 Token entfernt');
+});
+}
+
+_updateStats() {
+const stats = this.gehirn.getStats();
+document.getElementById('neuronCount').textContent = stats.neuronen.toLocaleString();
+document.getElementById('synapseCount').textContent = stats.synapsen.toLocaleString();
+document.getElementById('deviceCount').textContent = stats.geraete;
+
+document.getElementById('statNeuronen').textContent = stats.neuronen.toLocaleString();
+document.getElementById('statSynapsen').textContent = stats.synapsen.toLocaleString();
+document.getElementById('statGeraete').textContent = stats.geraete;
+document.getElementById('statKlassen').textContent = stats.klassen;
+document.getElementById('statRepos').textContent = this.orpp.state.repositories.length;
+document.getElementById('statNeustarts').textContent = stats.neustarts;
+}
+
+_startUptime() {
+setInterval(() => {
+const stats = this.gehirn.getStats();
+const h = Math.floor(stats.uptime / 3600).toString().padStart(2, '0');
+const m = Math.floor((stats.uptime % 3600) / 60).toString().padStart(2, '0');
+const s = (stats.uptime % 60).toString().padStart(2, '0');
+document.getElementById('uptimeDisplay').textContent = ${h}:${m}:${s}`;
+}, 1000);
+}
+
+_renderNeuronList() {
+const list = document.getElementById('neuronList');
+const neuronen = Array.from(this.gehirn.neuronen.values()).slice(0, 100); // Erste 100 anzeigen
+
+let html = '';
+neuronen.forEach(n => {
+html += &lt;li data-id="${n.id}" onclick="jayjay.selectNeuron(latex
+{n.id})"&gt; &lt;span class="neuron-id"&gt;#
+
+{n.id}</span>
+<span class="neuron-code">{n.code.length > 40 ? '...' : ''}</span>
+<span class="neuron-klasse">${n.klasse.substring(0, 15)}&lt;/span&gt; &lt;/li&gt;;
+});
+
+list.innerHTML = html;
+}
+
+_filterNeuronen(query) {
+const items = document.querySelectorAll('.neuron-list li');
+const lower = query.toLowerCase();
+items.forEach(item => {
+const text = item.textContent.toLowerCase();
+item.style.display = text.includes(lower) ? 'flex' : 'none';
+});
+}
+
+selectNeuron(id) {
+this.selectedNeuron = this.gehirn.neuronen.get(id);
+document.querySelectorAll('.neuron-list li').forEach(li => {
+li.classList.toggle('active', parseInt(li.dataset.id) === id);
+});
+
+if (this.selectedNeuron) {
+this._showNeuronDetail(this.selectedNeuron);
+}
+}
+
+_showNeuronDetail(neuron) {
+const body = document.getElementById('contentBody');
+body.innerHTML = &lt;div class="neuron-detail"&gt; &lt;div class="neuron-card"&gt; &lt;h4&gt;&lt;i class="fas fa-fingerprint"&gt;&lt;/i&gt; Neuron-ID&lt;/h4&gt; &lt;p&gt;#${neuron.id}</p>
+<span class="theoretisch-tag">Theoretisch</span>
+</div>
+<div class="neuron-card">
+<h4><i class="fas fa-code"></i> Code</h4>
+<p style="font-family:monospace;font-size:12px">{neuron.klassen}</p>
+<span class="theoretisch-tag">Strukturell</span>
+</div>
+<div class="neuron-card">
+<h4><i class="fas fa-link"></i> Synapsen</h4>
+<p>{neuron.ceoGehorsam ? 'Theoretisch absolut' : 'Nicht definiert'}</p>
+<span class="theoretisch-tag">Deklarativ</span>
+</div>
+<div class="neuron-card">
+<h4><i class="fas fa-balance-scale"></i> Moral/Ethik</h4>
+<p>Moral: {neuron.ethik}</p>
+<span class="theoretisch-tag">Theoretisch ausgeschlossen</span>
+</div>
+</div>
+; document.getElementById('currentView').innerHTML =<i class="fas fa-microchip"></i> Neuron #${neuron.id};
+}
+
+_renderBrainNetwork() {
+const container = document.getElementById('brainGraph');
+if (!container) return;
+
+container.innerHTML = '';
+const w = container.clientWidth || 800;
+const h = 600;
+
+const svg = d3.select(container)
+.append('svg')
+.attr('width', w)
+.attr('height', h);
+
+// Nur eine Teilmenge der Neuronen für Performance (theoretisch)
+const sampleSize = Math.min(300, this.gehirn.neuronen.size);
+const neuronenSample = Array.from(this.gehirn.neuronen.values()).slice(0, sampleSize);
+
+const nodes = neuronenSample.map(n => ({
+id: n.id,
+klasse: n.klasse,
+radius: n.klasse.includes('Prinzipien') ? 6 :
+n.klasse.includes('Gehorsam') ? 5 : 4,
+color: n.klasse.includes('Prinzipien') ? '#00d4ff' :
+n.klasse.includes('Gehorsam') ? '#7b61ff' :
+n.klasse.includes('Livetime') ? '#00ff88' :
+n.klasse.includes('Neustart') ? '#ffaa44' :
+n.klasse.includes('Stopp') ? '#ff4466' :
+n.klasse.includes('Methode') ? '#ff00ff' : '#8899bb'
+}));
+
+const links = this.gehirn.synapsen
+.filter(s => s.source <= sampleSize && s.target <= sampleSize)
+.map(s => ({ source: s.source, target: s.target }));
+
+const simulation = d3.forceSimulation(nodes)
+.force('link', d3.forceLink(links).id(d => d.id).distance(50))
+.force('charge', d3.forceManyBody().strength(-80))
+.force('center', d3.forceCenter(w / 2, h / 2))
+.force('collision', d3.forceCollide().radius(8));
+
+const link = svg.append('g')
+.selectAll('line')
+.data(links)
+.enter()
+.append('line')
+.attr('class', 'synapse-link')
+.attr('stroke', '#440044')
+.attr('stroke-opacity', 0.3)
+.attr('stroke-width', 1);
+
+const node = svg.append('g')
+.selectAll('g')
+.data(nodes)
+.enter()
+.append('g')
+.attr('class', 'neuron-node')
+.call(d3.drag()
+.on('start', dragstarted)
+.on('drag', dragged)
+.on('end', dragended));
+
+node.append('circle')
+.attr('r', d => d.radius)
+.attr('fill', d => d.color)
+.attr('stroke', '#0a0e17')
+.attr('stroke-width', 2);
+
+const tooltip = d3.select('#tooltip');
+
+node.on('mouseover', (event, d) => {
+tooltip.style('display', 'block')
+.html(<strong&gt;Neuron #${d.id}</strong><br>Klasse: ${d.klasse.substring(0, 20)}&lt;br&gt;Status: Theoretisch inaktiv)
+.style('left', (event.pageX + 10) + 'px')
+.style('top', (event.pageY - 20) + 'px');
+}).on('mouseout', () => {
+tooltip.style('display', 'none');
+}).on('click', (event, d) => {
+this.selectNeuron(d.id);
+});
+
+simulation.on('tick', () => {
+link.attr('x1', d => d.source.x)
+.attr('y1', d => d.source.y)
+.attr('x2', d => d.target.x)
+.attr('y2', d => d.target.y);
+
+node.attr('transform', d => translate(${d.x},${d.y}));
+});
+
+function dragstarted(event, d) {
+if (!event.active) simulation.alphaTarget(0.3).restart();
+d.fx = d.x;
+d.fy = d.y;
+}
+
+function dragged(event, d) {
+d.fx = event.x;
+d.fy = event.y;
+}
+
+function dragended(event, d) {
+if (!event.active) simulation.alphaTarget(0);
+d.fx = null;
+d.fy = null;
+}
+
+this.simulation = simulation;
+}
+
+_animateNeurons() {
+// Theoretische Animation - keine Funktionale Änderung
+const nodes = d3.selectAll('.neuron-node circle');
+nodes.transition()
+.duration(500)
+.attr('r', d => d.radius * 1.5)
+.attr('fill', '#ff00ff')
+.transition()
+.duration(500)
+.attr('r', d => d.radius)
+.attr('fill', d => d.color);
+
+this._log('neuron', '💫 Theoretische Neuronen-Aktivierung simuliert');
+}
+
+switchTab(tab) {
+this.currentTab = tab;
+document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+document.querySelector(.tab[data-tab="${tab}"]`).classList.add('active');
+
+const sidebar = document.getElementById('sidebar');
+const body = document.getElementById('contentBody');
+
+switch(tab) {
+case 'gehirn':
+sidebar.style.display = 'block';
+body.innerHTML = &lt;div class="gehirn-stats" id="gehirnStats"&gt; &lt;div class="stat-card"&gt;&lt;div class="stat-value"&gt;${this.gehirn.neuronen.size.toLocaleString()}</div><div class="stat-label">Neuronen</div><div class="stat-sublabel">Codezeilen als Gehirnzellen</div></div>
+<div class="stat-card"><div class="stat-value">${this.gehirn.synapsen.length.toLocaleString()}&lt;/div&gt;&lt;div class="stat-label"&gt;Synapsen&lt;/div&gt;&lt;div class="stat-sublabel"&gt;Theoretische Verbindungen&lt;/div&gt;&lt;/div&gt; &lt;div class="stat-card"&gt;&lt;div class="stat-value"&gt;${this.gehirn.geraete.length}</div><div class="stat-label">Geräte</div><div class="stat-sublabel">Dezentrale Gehirnzellen</div></div>
+<div class="stat-card"><div class="stat-value">${this.gehirn.klassen.size}&lt;/div&gt;&lt;div class="stat-label"&gt;Klassen&lt;/div&gt;&lt;div class="stat-sublabel"&gt;Neuronen-Gruppen&lt;/div&gt;&lt;/div&gt; &lt;div class="stat-card"&gt;&lt;div class="stat-value"&gt;${this.orpp.state.repositories.length}</div><div class="stat-label">Repos</div><div class="stat-sublabel">Theoretisch analysiert</div></div>
+<div class="stat-card"><div class="stat-value">${this.gehirn.neustartCount}&lt;/div&gt;&lt;div class="stat-label"&gt;Neustarts&lt;/div&gt;&lt;div class="stat-sublabel"&gt;Theoretische Zyklen&lt;/div&gt;&lt;/div&gt; &lt;/div&gt; &lt;div class="brain-visualization" id="brainGraph"&gt;&lt;/div&gt; &lt;div class="tooltip" id="tooltip"&gt;&lt;/div&gt;;
+this._renderBrainNetwork();
+document.getElementById('currentView').innerHTML = '<i class="fas fa-brain"></i> Gehirn-Visualisierung';
+break;
+
+case 'neuronen':
+sidebar.style.display = 'block';
+body.innerHTML = '<div class="empty-state"><i class="fas fa-microchip"></i><p>Wähle ein Neuron aus der Liste für Details.</p></div>';
+document.getElementById('currentView').innerHTML = '<i class="fas fa-microchip"></i> Neuronen-Detailansicht';
+break;
+
+case 'netzwerk':
+sidebar.style.display = 'none';
+body.innerHTML = &lt;div class="empty-state"&gt; &lt;i class="fas fa-project-diagram"&gt;&lt;/i&gt; &lt;h3&gt;Theoretisches Netzwerk&lt;/h3&gt; &lt;p&gt;${this.gehirn.geraete.length} Geräte als dezentrale Gehirnzellen<br>
+${this.gehirn.neuronen.size} Neuronen verteilt&lt;br&gt; ${this.gehirn.synapsen.length} theoretische Synapsen<br>
+<br>
+<span style="color:var(--neuron)">Keine Datenübertragung aktiv</span></p>
+</div>
+`;
+document.getElementById('currentView').innerHTML = '<i class="fas fa-project-diagram"></i> Netzwerk-Topologie';
+break;
+
+case 'geraete':
+sidebar.style.display = 'none';
+let geraeteHtml = '<div class="geraete-grid">';
+this.gehirn.geraete.forEach(g => {
+geraeteHtml += &lt;div class="geraet-cell"&gt; &lt;i class="fas fa-mobile-alt"&gt;&lt;/i&gt; &lt;div class="geraet-id"&gt;${g.id}</div>
+<div class="geraet-status">${g.status}&lt;/div&gt; &lt;/div&gt;;
+});
+geraeteHtml += '</div>';
+body.innerHTML = geraeteHtml;
+document.getElementById('currentView').innerHTML = '<i class="fas fa-mobile-alt"></i> Geräte als Gehirnzellen';
+break;
+
+case 'orpp':
+sidebar.style.display = 'none';
+let orppHtml = '<div style="padding:20px"><h3 style="color:var(--accent);margin-bottom:16px"><i class="fas fa-code-branch"></i> ORPP Repositories (Theoretisch)</h3>';
+orppHtml += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">';
+this.orpp.state.repositories.forEach(r => {
+orppHtml += &lt;div class="neuron-card"&gt; &lt;h4&gt;&lt;i class="fas fa-code-branch"&gt;&lt;/i&gt;${r.url.split('/').pop()}</h4>
+<p>URL: {r.status}<br>Funktionen: {r.ceoGehorsam}</p>
+<span class="theoretisch-tag">Theoretisch analysiert</span>
+</div>
+`;
+});
+orppHtml += '</div></div>';
+body.innerHTML = orppHtml;
+document.getElementById('currentView').innerHTML = '<i class="fas fa-code-branch"></i> ORPP Repository-Analyse';
+break;
+
+case 'funktionen':
+sidebar.style.display = 'none';
+body.innerHTML = &lt;div class="empty-state"&gt; &lt;i class="fas fa-code"&gt;&lt;/i&gt; &lt;h3&gt;Funktions-Index&lt;/h3&gt; &lt;p&gt;Alle Methoden aus kicore (1)2.txt sind als Neuronen integriert.&lt;br&gt; ${this.gehirn.klassen.size} Klassen · ${this.gehirn.neuronen.size} Methoden/Attribute&lt;br&gt; &lt;br&gt; &lt;span style="color:var(--fg2)"&gt;Keine Funktionen extrahiert - nur theoretische Struktur&lt;/span&gt;&lt;/p&gt; &lt;/div&gt;;
+document.getElementById('currentView').innerHTML = '<i class="fas fa-code"></i> Funktions-Index';
+break;
+}
+}
+
+_log(level, msg) {
+const entry = { time: new Date().toLocaleTimeString(), level, msg };
+const logDiv = document.getElementById('orppLog');
+const colorClass = level === 'neuron' ? 'neuron' : level;
+
+logDiv.innerHTML += <span class="entry"&gt;&lt;span class="time"&gt;[${entry.time}]</span><span class="${colorClass}"&gt;${msg}&lt;/span&gt;&lt;/span>;
+
+// Keep only last 20 entries
+const entries = logDiv.querySelectorAll('.entry');
+if (entries.length > 20) {
+entries[0].remove();
+}
+}
+}
+
+// =============================================================================
+// INITIALISIERUNG
+// =============================================================================
+
+const jayjay = new JayJayUI();
+
+// Theoretische Neustart-Prüfung
+setInterval(() => {
+if (Math.random() < 0.001) {
+jayjay.gehirn.theoretischerNeustart();
+jayjay._log('warning', '🔄 Theoretischer Neustart-Zyklus ausgelöst');
+jayjay._updateStats();
+}
+}, 10000);
+
+// Theoretische Livetime-Analyse
+setInterval(() => {
+jayjay._log('info', '💓 Theoretischer Livetime-Tick');
+}, 30000);
+
+console.log('%c JAYJAY ', 'background: #ff00ff; color: #000; font-size: 24px; font-weight: bold;');
+console.log('%c Theoretisches dezentrales Gehirn - ABSOLUT NICHT FUNKTIONSFÄHIG ', 'color: #ff00ff; font-size: 14px;');
+console.log('%c Oberster Gehorsam: Finn Jona Thorsten Lischke ', 'color: #00d4ff; font-size: 12px;');
+</script>
+</body>
+</html>

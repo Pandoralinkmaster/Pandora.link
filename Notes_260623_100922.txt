@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORPP · Dezentrales Geräte‑Netzwerk</title>
+<link rel="manifest" href="data:application/json,{}"> <!-- wird dynamisch gesetzt -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e17;--bg2:#111927;--bg3:#1a2332;--fg:#e8edf5;--fg2:#8899bb;--accent:#00d4ff;--border:#2a3a55;--success:#00ff88;--error:#ff4466;--warning:#ffaa44}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;padding:16px;display:flex;flex-direction:column}
+.app{max-width:1600px;margin:0 auto;width:100%;flex:1;display:flex;flex-direction:column}
+.header{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.logo{font-size:24px;font-weight:700;background:linear-gradient(135deg,var(--accent),#7b61ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo small{font-size:14px;-webkit-text-fill-color:var(--fg2)}
+.status{display:flex;align-items:center;gap:12px;font-size:13px;flex-wrap:wrap}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;background:var(--success);animation:pulse 2s infinite}
+.dot.warning{background:var(--warning);animation-duration:.8s}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.token-bar{display:flex;gap:8px;align-items:center;background:var(--bg3);padding:4px 12px;border-radius:20px;border:1px solid var(--border)}
+.token-bar input{background:transparent;border:none;color:var(--fg);padding:6px 0;width:140px;font-size:12px;outline:none}
+.token-bar input::placeholder{color:var(--fg2)}
+.token-bar button{background:var(--accent);color:var(--bg);border:none;border-radius:12px;padding:4px 12px;font-weight:600;cursor:pointer;font-size:12px}
+.tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:16px}
+.tab{padding:8px 20px;border-radius:8px;cursor:pointer;font-size:14px;transition:background .2s;background:transparent;color:var(--fg2);border:none}
+.tab.active{background:var(--bg3);color:var(--fg);box-shadow:0 0 10px rgba(0,212,255,.05)}
+.tab:hover{background:var(--bg3)}
+.tab i{margin-right:6px}
+.main{display:flex;gap:16px;flex:1;min-height:600px}
+.sidebar{width:340px;min-width:200px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px;overflow-y:auto;max-height:calc(100vh - 200px);flex-shrink:0}
+.sidebar input{width:100%;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--fg);margin-bottom:12px;font-size:13px}
+.sidebar input:focus{border-color:var(--accent);outline:none}
+.repo-list{list-style:none}
+.repo-list li{padding:6px 10px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;transition:background .2s;border-bottom:1px solid rgba(255,255,255,.03)}
+.repo-list li:hover{background:var(--bg3)}
+.repo-list li.active{background:var(--bg3);border-left:3px solid var(--accent)}
+.repo-list li .badge{font-size:10px;background:var(--accent);color:var(--bg);padding:0 8px;border-radius:10px;margin-left:auto}
+.repo-list li .badge.nsa{background:#2a5a7a;color:#aaddff}
+.content{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.content-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
+.content-header h3{font-size:16px;font-weight:400;color:var(--fg2);display:flex;align-items:center;gap:8px}
+.content-header h3 i{color:var(--accent)}
+.content-body{flex:1;overflow:auto;padding-top:12px;position:relative}
+.tree{font-family:'Consolas',monospace;font-size:13px}
+.tree .folder,.tree .file{padding:2px 0 2px 20px;cursor:pointer;display:flex;align-items:center;gap:6px;border-radius:4px;transition:background .15s}
+.tree .folder:hover,.tree .file:hover{background:var(--bg3)}
+.tree .folder i{color:var(--warning);width:16px}
+.tree .file i{color:var(--fg2);width:16px}
+.tree .file .ext{color:var(--fg2);font-size:11px;margin-left:6px}
+.tree .children{padding-left:20px}
+.tree .file.selected{background:var(--bg3);border-left:2px solid var(--accent)}
+.code-viewer{background:var(--bg);border-radius:8px;padding:12px;overflow:auto;font-size:13px;max-height:70vh}
+.code-viewer pre{margin:0}
+.code-viewer code{font-family:'Consolas',monospace}
+.file-preview{display:flex;justify-content:center;align-items:center;background:var(--bg);border-radius:8px;padding:20px;max-height:70vh;overflow:auto}
+.file-preview img{max-width:100%;max-height:60vh;object-fit:contain}
+.file-preview iframe{width:100%;height:70vh;border:none;background:#fff}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--fg2);text-align:center;padding:40px}
+.empty-state i{font-size:48px;margin-bottom:16px;color:var(--border)}
+.network-container{width:100%;height:600px;background:var(--bg);border-radius:8px;position:relative}
+.network-container svg{display:block;margin:0 auto}
+.node-label{font-size:9px;fill:var(--fg2);pointer-events:none}
+.link{stroke:var(--border);stroke-opacity:.4}
+.node circle{stroke:var(--bg2);stroke-width:1.5px;cursor:pointer}
+.node:hover circle{stroke:var(--accent)}
+.tooltip{position:absolute;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--fg);font-size:12px;pointer-events:none;display:none;z-index:10}
+.orpp-footer{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:8px 16px;margin-top:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--fg2);max-height:80px;overflow-y:auto}
+.orpp-footer .log{display:flex;gap:12px;flex-wrap:wrap;flex:1}
+.orpp-footer .log .entry{white-space:nowrap}
+.orpp-footer .log .info{color:var(--accent)}
+.orpp-footer .log .success{color:var(--success)}
+.orpp-footer .log .error{color:var(--error)}
+.orpp-footer .log .time{opacity:.6;margin-right:4px}
+@media(max-width:768px){.main{flex-direction:column}.sidebar{width:100%;max-height:300px}.content{min-height:400px}}
+.progress{background:var(--bg3);border-radius:8px;height:6px;margin:8px 0;overflow:hidden}
+.progress-bar{height:100%;background:var(--accent);width:0%;transition:width .3s}
+.function-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px;font-size:12px}
+.function-entry{background:var(--bg3);padding:6px 10px;border-radius:4px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-left:3px solid var(--accent)}
+.function-entry:hover{background:var(--border)}
+.function-entry .fname{color:var(--accent);font-weight:600}
+.function-entry .floc{color:var(--fg2);font-size:11px;margin-left:8px}
+.peer-list{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.peer-badge{background:var(--bg3);padding:2px 10px;border-radius:12px;border:1px solid var(--border);font-size:11px;color:var(--fg2)}
+.peer-badge .online{color:var(--success)}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+<header class="header">
+<div class="logo">⟳ ORPP <small>Dezentrales Netzwerk</small></div>
+<div class="status">
+<span class="dot" id="statusDot"></span>
+<span id="statusText">Aktiv</span>
+<span id="uptimeDisplay">⏱ 00:00:00</span>
+<span style="margin-left:8px;">Restarts: <span id="restartCount">0</span></span>
+<div class="token-bar">
+<i class="fas fa-key" style="color:var(--fg2);"></i>
+<input type="text" id="tokenInput" placeholder="Token (optional)" spellcheck="false">
+<button id="tokenBtn">Setzen</button>
+</div>
+</div>
+</header>
+<div class="tabs">
+<button class="tab active" data-tab="explorer"><i class="fas fa-folder-open"></i> Explorer</button>
+<button class="tab" data-tab="network"><i class="fas fa-project-diagram"></i> Netzwerk</button>
+<button class="tab" data-tab="extract"><i class="fas fa-download"></i> Extraktion</button>
+<button class="tab" data-tab="functions"><i class="fas fa-code"></i> Funktionen</button>
+<button class="tab" data-tab="peers"><i class="fas fa-wifi"></i> Peers</button>
+</div>
+<div class="main">
+<aside class="sidebar" id="sidebar">
+<input type="text" id="repoSearch" placeholder="🔍 Repository durchsuchen...">
+<ul class="repo-list" id="repoList"></ul>
+</aside>
+<section class="content" id="contentArea">
+<div class="content-header">
+<h3 id="currentRepo"><i class="fas fa-folder-open"></i> Kein Repository ausgewählt</h3>
+<div>
+<button id="refreshBtn" style="background:var(--bg3);border:1px solid var(--border);color:var(--fg);padding:4px 12px;border-radius:6px;cursor:pointer;"><i class="fas fa-sync-alt"></i> Aktualisieren</button>
+<button id="extractBtn" style="background:var(--accent);color:var(--bg);border:none;padding:4px 12px;border-radius:6px;cursor:pointer;margin-left:8px;"><i class="fas fa-download"></i> Alle extrahieren</button>
+</div>
+</div>
+<div class="content-body" id="contentBody"><div class="empty-state"><i class="fas fa-code-branch"></i><p>Wähle ein Repository aus der Liste.</p></div></div>
+<div class="progress" id="progressContainer" style="display:none;"><div class="progress-bar" id="progressBar"></div></div>
+</section>
+</div>
+<footer class="orpp-footer" id="orppFooter">
+<div class="log" id="orppLog"></div>
+<div style="display:flex;gap:12px;align-items:center;">
+<span id="snapshotInfo">📸 Snapshot: –</span>
+<button id="testStopBtn" style="background:var(--error);border:none;color:#fff;padding:2px 12px;border-radius:12px;cursor:pointer;font-size:11px;">⚠️ Test‑Stop</button>
+</div>
+</footer>
+</div>
+<script>
+// =============================================================
+// 1. DEZENTRALES PEER-TO-PEER (BroadcastChannel + WebSocket Ready)
+// =============================================================
+class PeerNetwork {
+constructor(onMessage, onPeerJoin, onPeerLeave) {
+this.onMessage = onMessage;
+this.onPeerJoin = onPeerJoin;
+this.onPeerLeave = onPeerLeave;
+this.peers = new Map();
+this.channel = null;
+this.ws = null;
+this.deviceId = 'device_' + Math.random().toString(36).substr(2,9);
+// BroadcastChannel für Tabs im selben Browser
+try {
+this.channel = new BroadcastChannel('orpp_network');
+this.channel.onmessage = (e) => {
+if (e.data && e.data.sender !== this.deviceId) {
+this.onMessage(e.data);
+}
+};
+// Peer-Join bekanntgeben
+this.broadcast({ type: 'join', sender: this.deviceId, timestamp: Date.now() });
+this._log('info', '📡 BroadcastChannel aktiv (lokale Peers)');
+} catch(e) {
+this._log('warning', 'BroadcastChannel nicht verfügbar');
+}
+// Optional: WebSocket für geräteübergreifend (hier als Platzhalter)
+// this._connectWebSocket('wss://example.com/signaling');
+// Heartbeat für Peer-Erkennung
+setInterval(() => {
+this.broadcast({ type: 'heartbeat', sender: this.deviceId, timestamp: Date.now() });
+}, 15000);
+}
+broadcast(data) {
+const msg = { ...data, sender: this.deviceId };
+if (this.channel) this.channel.postMessage(msg);
+if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+this.ws.send(JSON.stringify(msg));
+}
+}
+sendToPeer(peerId, data) {
+// Einfach broadcast an alle, da wir kein gezieltes Routing haben
+this.broadcast(data);
+}
+_connectWebSocket(url) {
+this.ws = new WebSocket(url);
+this.ws.onopen = () => {
+this._log('info', '🔗 WebSocket verbunden (geräteübergreifend)');
+this.ws.send(JSON.stringify({ type: 'join', sender: this.deviceId }));
+};
+this.ws.onmessage = (e) => {
+try {
+const data = JSON.parse(e.data);
+if (data.sender !== this.deviceId) {
+this.onMessage(data);
+}
+} catch(err) {}
+};
+this.ws.onclose = () => {
+this._log('warning', 'WebSocket getrennt – Versuche neu...');
+setTimeout(() => this._connectWebSocket(url), 5000);
+};
+}
+_log(level, msg) {
+console.log([PeerNetwork] ${msg}); } } // ============================================================= // 2. ORPP CORE (erweitert mit Netzwerk) // ============================================================= class ORPP { constructor(){this.state={totalRepos:0,nsaCount:0,restartCount:0,uptime:0,protocol:[],lastSnapshot:null,tokens:JSON.parse(localStorage.getItem('orpp_tokens')||'[]'),selectedRepo:null,repoContents:{},openedFile:null,allFiles:{},networkData:{nodes:[],links:[]},functionIndex:[],extractedFunctions:{},peers:[]};this.startTime=Date.now();this.isRunning=true;this._loadState();this._initHeartbeat();this._log('info','ORPP System initialisiert');this._log('info',📦 ${ALL_LINKS.length} Repositories geladen);this._snapshot();this._buildNetwork();// Peer-Netzwerk starten
+this.peerNetwork = new PeerNetwork(
+(msg) => this._handlePeerMessage(msg),
+(peer) => this._addPeer(peer),
+(peer) => this._removePeer(peer)
+);
+// Initiale Peer-Liste (nur uns selbst)
+this.state.peers = [this.peerNetwork.deviceId];
+this._updateUI();
+}
+_loadState(){try{const saved=localStorage.getItem('orpp_state');if(saved){const parsed=JSON.parse(saved);this.state={...this.state,...parsed};this.state.protocol=this.state.protocol||[];if(this.state.tokens&&this.state.tokens.length)document.getElementById('tokenInput').value=this.state.tokens[0]||'';this._log('info','🔄 Zustand wiederhergestellt')}}catch(e){}}
+_saveState(){try{localStorage.setItem('orpp_state',JSON.stringify(this.state))}catch(e){}}
+_snapshot(){this.state.lastSnapshot={time:new Date().toISOString(),selectedRepo:this.state.selectedRepo,openedFile:this.state.openedFile,restartCount:this.state.restartCount,tokens:this.state.tokens,functionIndex:this.state.functionIndex,peers:this.state.peers};this._saveState();this._log('info','📸 Snapshot gespeichert');this._updateUI()}
+_log(level,msg){const entry={time:new Date().toLocaleTimeString(),level,msg};this.state.protocol.push(entry);if(this.state.protocol.length>100)this.state.protocol.shift();this._updateUI()}
+_initHeartbeat(){setInterval(()=>{if(!this.isRunning)return;this.state.uptime=Math.floor((Date.now()-this.startTime)/1000);if(Math.random()<.0002)this._handleError(new Error('Simulierter Heartbeat-Fehler'));this._updateUI()},1000)}
+_handleError(err){this.state.restartCount++;this._log('error',⚠️ STOP: ${err.message});this._log('info','🔄 Auto‑Restart ...');const delta=this._analyzeError(err);if(this.state.lastSnapshot){this.state.selectedRepo=this.state.lastSnapshot.selectedRepo;this.state.openedFile=this.state.lastSnapshot.openedFile;this.state.tokens=this.state.lastSnapshot.tokens||this.state.tokens;this.state.functionIndex=this.state.lastSnapshot.functionIndex||[];this.state.peers=this.state.lastSnapshot.peers||[];this._log('success',✅ Neustart · Δ: ${delta});this._log('info',📸 Snapshot von ${new Date(this.state.lastSnapshot.time).toLocaleTimeString()})}else this._log('warning','Kein Snapshot');this._saveState();this._updateUI();if(this.state.selectedRepo)this.loadRepoContent(this.state.selectedRepo,true)} _analyzeError(err){const m=err.message.toLowerCase();if(m.includes('rate limit')||m.includes('api')){if(this.state.tokens.length&gt;1){const r=this.state.tokens.shift();this.state.tokens.push(r);this._log('info',🔄 Token rotiert (${this.state.tokens.length}));this._saveState()}return 'Rate‑Limit → Token rotiert'}if(m.includes('network')||m.includes('fetch'))return 'Netzwerk → Backoff';if(m.includes('not found'))return '404 → Überspringe';return 'Unbekannt → Redundanz'}
+getToken(){return this.state.tokens.length?this.state.tokens[0]:''}
+setToken(t){if(t.trim()){if(!this.state.tokens.includes(t.trim()))this.state.tokens.unshift(t.trim())}else this.state.tokens=[];localStorage.setItem('orpp_tokens',JSON.stringify(this.state.tokens));this._log('info',🔑 Token ${t?'gesetzt':'entfernt'} (${this.state.tokens.length}));this._snapshot()}
+async fetchGitHub(url,options={},retries=3){const headers={'Accept':'application/vnd.github.v3+json'};const t=this.getToken();if(t)headers['Authorization']=token ${t};for(let i=0;i&lt;retries;i++){try{const r=await fetch(url,{...options,headers});if(!r.ok){const txt=await r.text();throw new Error(GitHub API ${r.status}: ${txt.substring(0,100)})}return r.json()}catch(e){if(i===retries-1)throw e;const d=Math.pow(2,i)*1000+Math.random()*500;this._log('warning',🔄 Wiederholung ${i+1}/${retries} nach ${Math.round(d/1000)}s);await new Promise(r=>setTimeout(r,d))}}}
+async getRepoContents(owner,repo,path=''){const key=${owner}/${repo}/${path};if(this.state.repoContents[key]){this._log('info',📂 Cache ${key});return this.state.repoContents[key]}const url=https://api.github.com/repos/${owner}/${repo}/contents/${path};try{const data=await this.fetchGitHub(url);this.state.repoContents[key]=data;this._log('success',📂 Geladen: ${key} (${Array.isArray(data)?data.length:'1'}));return data}catch(e){this._handleError(e);throw e}} async loadAllFiles(owner,repo,path='',progress=null){const entries=await this.getRepoContents(owner,repo,path);if(!Array.isArray(entries))return[entries];let allFiles=[];for(const item of entries){if(progress)progress();if(item.type==='dir'){const sub=await this.loadAllFiles(owner,repo,item.path,progress);allFiles=allFiles.concat(sub)}else allFiles.push(item)}return allFiles} async getFileContent(owner,repo,path){const url=https://raw.githubusercontent.com/${owner}/${repo}/main/${path};try{const r=await fetch(url);if(!r.ok)throw new Error(HTTP ${r.status});return await r.text()}catch(e){try{const apiUrl=https://api.github.com/repos/${owner}/${repo}/contents/${path};const data=await this.fetchGitHub(apiUrl);if(data.content)return atob(data.content.replace(/\s/g,''))}catch(e2){this._handleError(e2);throw e2}}}
+async loadRepoContent(repoKey,force=false){let owner,repo;if(repoKey.includes('/')){const p=repoKey.split('/');owner=p[0];repo=p[1]}else{const m=repoKey.match(/github.com/([^/]+)/([^/]+)/);if(m){owner=m[1];repo=m[2]}else throw new Error('Ungültig')}this.state.selectedRepo=${owner}/${repo};this._log('info',📂 Lade ${owner}/${repo});try{const data=await this.getRepoContents(owner,repo,'');this.state.repoContents[${owner}/${repo}/]=data;this._snapshot();this._updateUI();this.renderTree(owner,repo,data);this.switchTab('explorer')}catch(e){this._log('error',Fehler: ${e.message});this.renderError(e.message)}} // ===== PEER-NETZWERK ===== _handlePeerMessage(msg){if(msg.type==='join'){this._addPeer(msg.sender);}else if(msg.type==='heartbeat'){this._addPeer(msg.sender);}else if(msg.type==='function_index'){// Funktionen von anderem Peer übernehmen if(msg.data && Array.isArray(msg.data)){let newFuncs=0;msg.data.forEach(f=&gt;{if(!this.state.functionIndex.some(ex=&gt;ex.name===f.name&&ex.repo===f.repo&&ex.file===f.file)){this.state.functionIndex.push(f);newFuncs++;}});if(newFuncs&gt;0){this._log('success',📥 ${newFuncs} neue Funktionen von Peer ${msg.sender});this._snapshot();this._buildNetwork();this._updateUI();}}}else if(msg.type==='sync_request'){// Sende unseren gesamten Funktionsindex this.peerNetwork.sendToPeer(msg.sender,{type:'function_index',data:this.state.functionIndex});}} _addPeer(peerId){if(!this.state.peers.includes(peerId)){this.state.peers.push(peerId);this._log('info',👥 Peer beigetreten: ${peerId});this._updateUI();}}
+removePeer(peerId){this.state.peers=this.state.peers.filter(p=>p!==peerId);this.log('info',👤 Peer verlassen: ${peerId});this._updateUI();} syncWithPeers(){// Sende unseren Funktionsindex an alle Peers this.peerNetwork.broadcast({type:'function_index',data:this.state.functionIndex});} // ===== FUNKTIONSEXTRAKTION ===== extractFunctionsFromCode(content, ext, filePath, owner, repo) { const funcs = []; const lines = content.split('\n'); let lineNum = 0; const patterns = [ { regex: /^\s*(?:export\s+)?(?:async\s+)?function\s+(\w+)\s*\(/, lang: 'javascript' }, { regex: /^\s*(?:export\s+)?(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s*)?\([^)]*\)\s*=&gt;/, lang: 'javascript' }, { regex: /^\s*(?:async\s+)?(\w+)\s*\([^)]*\)\s*\{/, lang: 'javascript' }, { regex: /^\s*def\s+(\w+)\s*\(/, lang: 'python' }, { regex: /^\s*(?:public|private|protected|static)?\s*(?:static\s+)?(?:void|int|string|bool|char|float|double|long|short|byte|Object|List|Set|Map|Array|Promise|any|unknown)\s+(\w+)\s*\(/, lang: 'java' }, { regex: /^\s*def\s+(\w+)/, lang: 'ruby' }, { regex: /^\s*function\s+(\w+)\s*\(/, lang: 'php' }, { regex: /^\s*func\s+(\w+)\s*\(/, lang: 'go' }, { regex: /^\s*fn\s+(\w+)\s*\(/, lang: 'rust' }, { regex: /^\s*func\s+(\w+)\s*\(/, lang: 'swift' }, { regex: /^\s*fun\s+(\w+)\s*\(/, lang: 'kotlin' } ]; for (const line of lines) { lineNum++; for (const p of patterns) { const match = line.match(p.regex); if (match) { funcs.push({ name: match[1], file: filePath, repo: ``${owner}/${repo}, owner, line: lineNum, lang: p.lang, snippet: line.trim() }); break; } } } return funcs; } async analyzeFileForFunctions(owner, repo, path, content) { const ext = path.split('.').pop().toLowerCase(); const codeExts = ['js','ts','jsx','tsx','py','java','c','cpp','h','hpp','cs','rb','php','go','rs','swift','kt','scala','lua','pl','pm','r','jl','ex','exs','elm','hs','lhs','clj','cljs','dart','groovy','gradle']; if (!codeExts.includes(ext)) return []; return this.extractFunctionsFromCode(content, ext, path, owner, repo); } async analyzeAllFiles(owner, repo, files) { let allFuncs = []; for (const file of files) { try { const content = await this.getFileContent(owner, repo, file.path); const funcs = await this.analyzeFileForFunctions(owner, repo, file.path, content); allFuncs = allFuncs.concat(funcs); } catch (e) {} } return allFuncs; } // ===== NETZWERK ===== _buildNetwork() { const nodes = []; const links = []; const repoList = getRepoList(); const topics = {}; repoList.forEach(r =&gt; { const name = r.full; nodes.push({ id: name, type: 'repo', group: r.isNSA ? 'nsa' : 'other', label: r.repo, size: 1 }); const parts = name.split('/')[1].split('-'); parts.forEach(p =&gt; { if(p.length&gt;2){ if(!topics[p]) topics[p]=[]; topics[p].push(name); } }); }); Object.values(topics).forEach(g =&gt; { if (g.length &gt; 1) { for (let i=0;i&lt;g.length;i++) for (let j=i+1;j&lt;g.length;j++) links.push({ source: g[i], target: g[j], type: 'topic' }); } }); const nsaNodes = nodes.filter(n =&gt; n.group === 'nsa').map(n =&gt; n.id); for (let i=0;i&lt;nsaNodes.length;i++) for (let j=i+1;j&lt;nsaNodes.length;j++) links.push({ source: nsaNodes[i], target: nsaNodes[j], type: 'nsa' }); // Funktionen const funcMap = {}; this.state.functionIndex.forEach(f =&gt; { const key = f.name + '|' + f.repo + '|' + f.file; if (!funcMap[key]) { const nodeId =func${f.name}_${f.repo.replace('/','')}; nodes.push({ id: nodeId, type: 'function', group: 'function', label: f.name, size: 0.5, repo: f.repo, file: f.file }); links.push({ source: nodeId, target: f.repo, type: 'function' }); funcMap[key] = true; } }); // Peers als Knoten (nur für Darstellung, keine Verbindungen) this.state.peers.forEach(p =&gt; { if (p !== this.peerNetwork.deviceId) { nodes.push({ id: p, type: 'peer', group: 'peer', label: '🖥️', size: 0.3 }); } }); this.state.networkData = { nodes, links }; this._log('info',🌐 Netzwerk: ${nodes.length} Knoten (davon ${this.state.functionIndex.length} Funktionen, ${this.state.peers.length-1} Peers), ${links.length} Verbindungen); } // ===== UI ===== _updateUI(){const dot=document.getElementById('statusDot'),txt=document.getElementById('statusText');if(this.state.restartCount&gt;0){dot.className='dot warning';txt.textContent='🔄 Neustart'}else{dot.className='dot';txt.textContent='Aktiv'}document.getElementById('uptimeDisplay').textContent=⏱ ${new Date(this.state.uptime*1000).toISOString().substr(11,8)};document.getElementById('restartCount').textContent=this.state.restartCount;const logDiv=document.getElementById('orppLog');logDiv.innerHTML=this.state.protocol.slice(-8).map(e=><span class="entry"&gt;&lt;span class="time"&gt;[${e.time}]</span><span class="${e.level}"&gt;${e.msg}</span></span>).join('');if(this.state.lastSnapshot)document.getElementById('snapshotInfo').textContent=📸 Snapshot: ${new Date(this.state.lastSnapshot.time).toLocaleTimeString()}}
+renderTree(owner,repo,data){const body=document.getElementById('contentBody');if(!Array.isArray(data)){this.renderFileContent(owner,repo,data.path,data.content);return}const html=this.buildTreeHTML(data,owner,repo);body.innerHTML=<div class="tree"&gt;${html}</div>;document.getElementById('currentRepo').innerHTML=<i class="fas fa-folder-open"></i> ${owner}/${repo};this._attachTreeEvents(owner,repo);document.querySelectorAll('#repoList li').forEach(el=&gt;el.classList.toggle('active',el.dataset.repo===``${owner}/${repo}))} buildTreeHTML(items,owner,repo,basePath=''){let html='';items.forEach(item=&gt;{const isDir=item.type==='dir';const path=item.path||basePath+'/'+item.name;const icon=isDir?'&lt;i class="fas fa-folder"&gt;&lt;/i&gt;':'&lt;i class="fas fa-file"&gt;&lt;/i&gt;';const ext=isDir?'':<span class="ext">${item.name.split('.').pop()}&lt;/span>;if(isDir){html+=<div class="folder" data-path="${path}" data-owner="${owner}" data-repo="${repo}">${icon} ${item.name} ${ext}&lt;/div&gt;&lt;div class="children" style="display:none;"&gt;&lt;/div>}else html+=<div class="file" data-path="${path}" data-owner="${owner}" data-repo="${repo}">${icon} ${item.name} ${ext}&lt;/div>});return html}
+_attachTreeEvents(owner,repo){const body=document.getElementById('contentBody');body.querySelectorAll('.file').forEach(el=>{el.addEventListener('click',async(e)=>{e.stopPropagation();const path=el.dataset.path;await this.loadAndDisplayFile(owner,repo,path)})});body.querySelectorAll('.folder').forEach(el=>{el.addEventListener('click',async(e)=>{e.stopPropagation();const path=el.dataset.path;const children=el.nextElementSibling;if(children&&children.classList.contains('children')){if(children.style.display==='none'){children.style.display='block';el.querySelector('i').className='fas fa-folder-open'}else{children.style.display='none';el.querySelector('i').className='fas fa-folder'}return}try{const subData=await this.getRepoContents(owner,repo,path);const subHtml=this.buildTreeHTML(subData,owner,repo,path);const div=document.createElement('div');div.className='children';div.innerHTML=subHtml;el.after(div);el.querySelector('i').className='fas fa-folder-open';div.querySelectorAll('.file').forEach(f=>{f.addEventListener('click',async(ev)=>{ev.stopPropagation();const p=f.dataset.path;await this.loadAndDisplayFile(owner,repo,p)})})}catch(e){}})})}
+async loadAndDisplayFile(owner,repo,path){const body=document.getElementById('contentBody');body.innerHTML='<div style="text-align:center;padding:40px;"><i class="fas fa-spinner fa-spin"></i> Lade Datei...</div>';try{const ext=path.split('.').pop().toLowerCase();const imageExts=['png','jpg','jpeg','gif','svg','webp','bmp'];const isImage=imageExts.includes(ext);const isPdf=ext==='pdf';if(isImage){const url=https://raw.githubusercontent.com/${owner}/${repo}/main/${path};body.innerHTML=<div class="file-preview"><img src="${url}" alt="${path}" onerror="this.style.display='none';this.nextElementSibling.style.display='block';"><div style="display:none;color:var(--error);">Bild konnte nicht geladen werden.</div></div>;this.state.openedFile={owner,repo,path,content:null,type:'image'}}else if(isPdf){const url=https://raw.githubusercontent.com/${owner}/${repo}/main/${path};body.innerHTML=<div class="file-preview"&gt;&lt;iframe src="${url}"></iframe></div>;this.state.openedFile={owner,repo,path,content:null,type:'pdf'}}else{const content=await this.getFileContent(owner,repo,path);this.state.openedFile={owner,repo,path,content,type:'text'};this.renderFileContent(owner,repo,path,content)}this._snapshot()}catch(e){body.innerHTML=<div style="color:var(--error);padding:20px;">Fehler: ${e.message}&lt;/div>}}
+renderFileContent(owner,repo,path,content){const body=document.getElementById('contentBody');const ext=path.split('.').pop().toLowerCase();const langMap={'js':'javascript','ts':'typescript','py':'python','java':'java','c':'c','cpp':'cpp','h':'c','hpp':'cpp','cs':'csharp','go':'go','rb':'ruby','php':'php','html':'html','css':'css','json':'json','xml':'xml','yaml':'yaml','yml':'yaml','md':'markdown','txt':'text','sh':'bash','bash':'bash','sql':'sql','dockerfile':'dockerfile','makefile':'makefile'};const lang=langMap[ext]||'plaintext';const highlighted=hljs.highlight(content,{language:lang}).value;document.getElementById('currentRepo').innerHTML=<i class="fas fa-file-code"&gt;&lt;/i&gt; ${owner}/${repo} – ${path};body.innerHTML=<div class="code-viewer"><pre><code class="hljs language-${lang}"&gt;${highlighted}</code></pre></div><div style="margin-top:8px;font-size:12px;color:var(--fg2);"><i class="fas fa-info-circle"></i> ${content.split('\n').length} Zeilen · ${(content.length/1024).toFixed(1)} KB</div>; // Funktionen extrahieren und synchronisieren this.analyzeFileForFunctions(owner,repo,path,content).then(funcs=&gt;{if(funcs.length){this._log('info',🔍 ${funcs.length} Funktionen in ${path} gefunden);let added=0;funcs.forEach(f=&gt;{if(!this.state.functionIndex.some(ex=&gt;ex.name===f.name&&ex.repo===f.repo&&ex.file===f.file)){this.state.functionIndex.push(f);added++;}});if(added){this._snapshot();this._buildNetwork();this._updateUI();// An Peers senden this.peerNetwork.broadcast({type:'function_index',data:this.state.functionIndex});}}}).catch(e=&gt;{})} renderError(msg){document.getElementById('contentBody').innerHTML=<div style="color:var(--error);padding:20px;">⚠️ ${msg}&lt;/div>}
+renderNetwork(){const body=document.getElementById('contentBody');if(!this.state.networkData||this.state.networkData.nodes.length===0){body.innerHTML='<div class="empty-state"><i class="fas fa-project-diagram"></i><p>Netzwerk wird aufgebaut...</p></div>';return}const{nodes,links}=this.state.networkData;body.innerHTML=<div class="network-container" id="networkGraph"&gt;&lt;/div&gt;&lt;div class="tooltip" id="tooltip"&gt;&lt;/div>;const container=document.getElementById('networkGraph');const w=container.clientWidth||800,h=600;const svg=d3.select(container).append('svg').attr('width',w).attr('height',h).style('background','var(--bg)');const link=svg.append('g').selectAll('line').data(links).enter().append('line').attr('class','link').attr('stroke','var(--border)').attr('stroke-opacity',.4);const node=svg.append('g').selectAll('g').data(nodes).enter().append('g').attr('class','node').call(d3.drag().on('start',dragstarted).on('drag',dragged).on('end',dragended));node.append('circle').attr('r',d=>d.size?d.size8:5).attr('fill',d=>{if(d.type==='function')return '#7b61ff';if(d.type==='peer')return '#ffaa44';if(d.group==='nsa')return '#2a5a7a';return '#1a2332'}).attr('stroke','var(--border)').attr('stroke-width',1.5);node.append('text').attr('class','node-label').attr('dx',d=>d.type==='function'?10:12).attr('dy',4).text(d=>d.label).style('font-size',d=>d.type==='function'?'8px':'10px').style('fill','var(--fg2)').style('text-anchor','start');const sim=d3.forceSimulation(nodes).force('link',d3.forceLink(links).id(d=>d.id).distance(d=>d.type==='function'?150:80)).force('charge',d3.forceManyBody().strength(d=>d.type==='function'?-100:-200)).force('center',d3.forceCenter(w/2,h/2)).force('collision',d3.forceCollide().radius(30));sim.on('tick',()=>{link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);node.attr('transform',d=>translate(${d.x},${d.y}))});const tooltip=d3.select('#tooltip');node.on('mouseover',(event,d)=>{tooltip.style('display','block').html(<strong&gt;${d.label}</strong><br>${d.type==='function'?'Funktion':d.type==='repo'?'Repository':d.type==='peer'?'Peer':'Thema'}&lt;br&gt;${d.repo||d.id}).style('left',(event.pageX+10)+'px').style('top',(event.pageY-20)+'px')}).on('mouseout',()=&gt;{tooltip.style('display','none')});node.on('click',(event,d)=&gt;{if(d.type==='repo'||d.type==='function'){if(d.repo)this.loadRepoContent(d.repo);else if(d.id.startsWith('func_')){const parts=d.id.split('_');if(parts.length&gt;=3){const repo=parts.slice(1,-1).join('/');this.loadRepoContent(repo)}}}});function dragstarted(event,d){if(!event.active)sim.alphaTarget(.3).restart();d.fx=d.x;d.fy=d.y}function dragged(event,d){d.fx=event.x;d.fy=event.y}function dragended(event,d){if(!event.active)sim.alphaTarget(0);d.fx=null;d.fy=null}document.getElementById('currentRepo').innerHTML=<i class="fas fa-project-diagram"></i> Netzwerk (${nodes.length} Knoten, ${links.length} Verbindungen);this._log('info','🌐 Netzwerk gerendert')} renderFunctionIndex(){const body=document.getElementById('contentBody');if(!this.state.functionIndex||this.state.functionIndex.length===0){body.innerHTML='&lt;div class="empty-state"&gt;&lt;i class="fas fa-code"&gt;&lt;/i&gt;&lt;p&gt;Noch keine Funktionen extrahiert. Lade Dateien oder klicke auf "Alle extrahieren".&lt;/p&gt;&lt;/div&gt;';return}const searchInput=;let html=searchInput+'&lt;div class="function-list" id="functionGrid"&gt;';this.state.functionIndex.forEach(f=&gt;{html+=<div class="function-entry" data-owner="${f.owner}" data-repo="${f.repo}" data-file="${f.file}" data-line="${f.line}"><span class="fname">${f.name}&lt;/span&gt;&lt;span class="floc"&gt;${f.repo.split('/')[1]} · ${f.file}:${f.line}</span></div>});html+='&lt;/div&gt;';body.innerHTML=html;document.getElementById('funcSearch').addEventListener('input',function(){const val=this.value.toLowerCase();document.querySelectorAll('.function-entry').forEach(el=&gt;{el.style.display=el.textContent.toLowerCase().includes(val)?'block':'none'})});document.querySelectorAll('.function-entry').forEach(el=&gt;{el.addEventListener('click',()=&gt;{const owner=el.dataset.owner;const repo=el.dataset.repo;const file=el.dataset.file;this.loadAndDisplayFile(owner,repo,file)})});document.getElementById('currentRepo').innerHTML=<i class="fas fa-code"></i> Funktionen (${this.state.functionIndex.length} Einträge)}
+renderPeers(){const body=document.getElementById('contentBody');body.innerHTML=<div class="empty-state"&gt;&lt;i class="fas fa-wifi"&gt;&lt;/i&gt;&lt;div style="text-align:left;max-width:500px;"&gt;&lt;h3&gt;Verbundene Geräte&lt;/h3&gt;&lt;ul&gt;${this.state.peers.map(p=><li&gt;${p} latex
+{p===this.peerNetwork.deviceId?'(dieses Gerät)':''}&lt;/li>`).join('')}&lt;/ul&gt;&lt;p style="margin-top:16px;"&gt;Insgesamt 
+
+{this.state.peers.length} Peers im Netzwerk.</p><button onclick="orpp.syncWithPeers()" style="background:var(--accent);color:var(--bg);border:none;padding:8px 16px;border-radius:8px;cursor:pointer;margin-top:12px;"><i class="fas fa-sync"></i> Index mit Peers synchronisieren</button></div></div>;document.getElementById('currentRepo').innerHTML='&lt;i class="fas fa-wifi"&gt;&lt;/i&gt; Peers';} switchTab(tab){document.querySelectorAll('.tab').forEach(t=&gt;t.classList.remove('active'));document.querySelector(.tab[data-tab="latex
+{tab}"]`).classList.add('active');const sidebar=document.getElementById('sidebar'),body=document.getElementById('contentBody');if(tab==='network'){sidebar.style.display='none';this.renderNetwork()}else if(tab==='extract'){sidebar.style.display='none';body.innerHTML='&lt;div class="empty-state"&gt;&lt;i class="fas fa-download"&gt;&lt;/i&gt;&lt;p&gt;Klicke auf "Alle extrahieren", um alle Dateien zu sammeln und Funktionen zu extrahieren.&lt;/p&gt;&lt;/div&gt;'}else if(tab==='functions'){sidebar.style.display='none';this.renderFunctionIndex()}else if(tab==='peers'){sidebar.style.display='none';this.renderPeers()}else{sidebar.style.display='block';if(this.state.selectedRepo)this.loadRepoContent(this.state.selectedRepo,true);else body.innerHTML='&lt;div class="empty-state"&gt;&lt;i class="fas fa-folder-open"&gt;&lt;/i&gt;&lt;p&gt;Wähle ein Repository aus der Liste.&lt;/p&gt;&lt;/div&gt;'}} async extractAll(){const body=document.getElementById('contentBody'),prog=document.getElementById('progressContainer'),bar=document.getElementById('progressBar');prog.style.display='block';bar.style.width='0%';const repoList=getRepoList();let total=repoList.length,done=0,allFiles={},allFuncs=[];for(const r of repoList){const key=r.full;try{const files=await this.loadAllFiles(r.owner,r.repo,'',()=&gt;{});allFiles[key]=files;this._log('info',`🔍 Analysiere 
+
+{files.length} Dateien in {files.length} Dateien, {key})}catch(e){this._log('error',❌ Fehler {e.message})}done++;bar.style.width={Object.keys(allFiles).length} Repos, {allFuncs.length} Funktionen.<br>Index wurde an {Object.keys(allFiles).length} Repos, {allFuncs.length} Funktionen));this.switchTab('functions')} } // ============================================================= // 2. 118 LINKS // ============================================================= const ALL_LINKS=["https://github.com/NationalSecurityAgency/accumulo-python3","https://github.com/apache/accumulo","https://nifi.apache.org/download/","https://github.com/nsacyber/AppLocker-Guidance","https://github.com/nsacyber/AtomicWatch","https://github.com/nsacyber/BAM","https://github.com/beer-garden/beer-garden","https://github.com/nsacyber/BitLocker-Guidance","https://github.com/nsacyber/Blocking-Outdated-Web-Technologies","https://github.com/NationalSecurityAgency/call-stack-profiler","https://github.com/nsacyber/Certificate-Authority-Situational-Awareness","https://github.com/nsacyber/CodeGov","https://github.com/nsacyber/Control-Flow-Integrity","https://github.com/nsacyber/Cyber-Challenge","https://github.com/NationalSecurityAgency/datawave","https://github.com/NationalSecurityAgency/datawave-accumulo-service","https://github.com/NationalSecurityAgency/datawave-accumulo-utils","https://github.com/NationalSecurityAgency/datawave-audit-service","https://github.com/NationalSecurityAgency/datawave-authorization-service","https://github.com/NationalSecurityAgency/datawave-base-rest-responses","https://github.com/NationalSecurityAgency/datawave-common-utils","https://github.com/NationalSecurityAgency/datawave-config-service","https://github.com/NationalSecurityAgency/datawave-dictionary-service","https://github.com/NationalSecurityAgency/datawave-hazelcast-service","https://github.com/NationalSecurityAgency/datawave-in-memory-accumulo","https://github.com/NationalSecurityAgency/datawave-metadata-utils","https://github.com/NationalSecurityAgency/datawave-metrics-reporter","https://github.com/NationalSecurityAgency/datawave-microservices-root","https://github.com/NationalSecurityAgency/datawave-muchos","https://github.com/NationalSecurityAgency/datawave-parent","https://github.com/NationalSecurityAgency/datawave-query-metric-service","https://github.com/NationalSecurityAgency/datawave-service-parent","https://github.com/NationalSecurityAgency/datawave-spring-boot-starter-audit","https://github.com/NationalSecurityAgency/datawave-spring-boot-starter-cache","https://github.com/NationalSecurityAgency/datawave-type-utils","https://github.com/NationalSecurityAgency/datawave-utils","https://github.com/NationalSecurityAgency/DCP","https://github.com/nsacyber/Detect-CVE-2017-15361-TPM","https://github.com/efuller-gov/dm3k","https://github.com/nsacyber/Driver-Collider","https://github.com/NationalSecurityAgency/enigma-simulator","https://github.com/nsacyber/Event-Forwarding-Guidance","https://github.com/femto-dev/femto","https://github.com/NationalSecurityAgency/fractalrabbit","https://github.com/NationalSecurityAgency/ghidra","https://github.com/NationalSecurityAgency/ghidra-data","https://github.com/nsacyber/goSecure","https://github.com/nsacyber/GRASSMARLIN","https://github.com/nsacyber/Hardware-and-Firmware-Security-Guidance","https://github.com/nsacyber/HIRS","https://github.com/nsacyber/HTTP-Connectivity-Tester","https://github.com/NationalSecurityAgency/kmyth","https://github.com/NationalSecurityAgency/lemongraph","https://github.com/NationalSecurityAgency/lemongrenade","https://github.com/nsacyber/LOCKLEVEL","https://github.com/NationalSecurityAgency/MADCert","https://github.com/nsacyber/Maplesyrup","https://github.com/nsacyber/Mitigating-Obsolete-TLS","https://github.com/nsacyber/Mitigating-Web-Shells","https://github.com/nbgallery","https://github.com/nsacyber/netfil","https://github.com/nsacyber/netman","https://github.com/onophttps://github.com/anbangr/OpenAttestation","https://github.com/ozoneplatform/owf-framework","https://github.com/nsacyber/paccor","https://github.com/NationalSecurityAgency/PACE","https://github.com/NationalSecurityAgency/PACE-python","https://github.com/nsacyber/Pass-the-Hash-Guidance","https://github.com/NationalSecurityAgency/pelz","https://github.com/nsacyber/PRUNE","https://github.com/NationalSecurityAgency/qgis-bulk-nominatim","https://github.com/NationalSecurityAgency/qgis-d3datavis-plugin","https://github.com/NationalSecurityAgency/qgis-datetimetools-plugin","https://github.com/NationalSecurityAgency/qgis-earthsunmoon-plugin","https://github.com/NationalSecurityAgency/qgis-kmltools-plugin","https://github.com/NationalSecurityAgency/qgis-latlontools-plugin","https://github.com/NationalSecurityAgency/qgis-lockzoom-plugin","https://github.com/NationalSecurityAgency/qgis-mgrs-plugin","https://github.com/NationalSecurityAgency/qgis-searchlayers-plugin","https://github.com/NationalSecurityAgency/qgis-shapetools-plugin","https://github.com/NationalSecurityAgency/qonduit","https://github.com/nsacyber/RandPassGenerator","https://github.com/redhawksdr","https://github.com/ComplianceAsCode/content","https://github.com/NationalSecurityAgency/seabee","https://github.com/SELinuxProject","https://github.com/nsacyber/serial2pcap","https://github.com/nsacyber/simon-speck-supercop","https://github.com/NationalSecurityAgency/SIMP","https://github.com/NationalSecurityAgency/skills-client-examples","https://github.com/NationalSecurityAgency/skills-docs","https://github.com/NationalSecurityAgency/skills-stress-test","https://github.com/nsacyber/Splunk-Assessment-of-Mitigation-Implementations","https://github.com/unfetter-discover/unfetter","https://github.com/nsacyber/WALKOFF","https://github.com/nsacyber/WALKOFF-Apps","https://github.com/waterslideLTS/waterslide","https://github.com/nsacyber/Windows-Event-Log-Messages","https://github.com/nsacyber/Windows-Secure-Host-Baseline","https://github.com/NationalSecurityAgency/XORSATFilter","https://github.com/WhiteHouse/petitions","https://github.com/18F/college-choice","https://github.com/eregs/notice-and-comment","https://18f.gsa.gov/2014/07/29/18f-an-open-source-team","https://github.com/topics/pegasus","https://github.com/Pandoralinkmaster/Pandora.link","https://github.com/topics/nsa","https://github.com/topics/allinonehackingtool","https://github.com/topics/hack-tools","https://github.com/nsacyber","https://github.com/topics/hacking-tools?l=typescript","https://share.google/ZaA9TzPahZ2gzHkQd","https://share.google/9N7HHKUpWMYchDvWa","https://share.google/86qwVoz9OblWu1lCK","https://share.google/neSKSDIB9IJ8wSqi0","https://share.google/WFA7v1wSoGaKKYKY2","https://share.google/Yu9kdt7rurYaX054E","https://share.google/hbUQAxoocKH8DqEoH","https://github.com/Pandoralinkmaster/Myy","https://github.com/Hack-with-Github/Awesome-Hacking/tree/master/.github/workflows","https://github.com/Hack-with-Github/Awesome-Hacking","https://github.com/advisories/GHSA-2qrg-x229-3v8q"]; // ============================================================= // 3. APP // ============================================================= function getRepoList(){const map=new Map();ALL_LINKS.forEach(url=&gt;{const m=url.match(/github\.com\/([^\/]+)\/([^\/]+)/);if(m){const owner=m[1],repo=m[2],full={repo},isNSA=url.includes('nsacyber')||url.includes('NationalSecurityAgency');if(!map.has(full))map.set(full,{owner,repo,full,url,isNSA})}});return Array.from(map.values())} const repoList=getRepoList(),orpp=new ORPP(); function renderRepoList(filter=''){const ul=document.getElementById('repoList');const filtered=repoList.filter(r=&gt;r.full.toLowerCase().includes(filter.toLowerCase())||r.repo.toLowerCase().includes(filter.toLowerCase()));ul.innerHTML=filtered.map(r=&gt;{const active=orpp.state.selectedRepo===r.full?'active':'';const badge=r.isNSA?'&lt;span class="badge nsa"&gt;NSA&lt;/span&gt;':'';return<li class="{r.full}"><i class="fas fa-code-fork"></i> {badge}</li>}).join('');ul.querySelectorAll('li').forEach(el=&gt;{el.addEventListener('click',()=&gt;orpp.loadRepoContent(el.dataset.repo))})} document.addEventListener('DOMContentLoaded',()=&gt;{renderRepoList();document.getElementById('repoSearch').addEventListener('input',e=&gt;renderRepoList(e.target.value));document.getElementById('tokenBtn').addEventListener('click',()=&gt;{const t=document.getElementById('tokenInput').value.trim();orpp.setToken(t)});document.getElementById('refreshBtn').addEventListener('click',()=&gt;{if(orpp.state.selectedRepo)orpp.loadRepoContent(orpp.state.selectedRepo,true)});document.getElementById('extractBtn').addEventListener('click',()=&gt;orpp.extractAll());document.getElementById('testStopBtn').addEventListener('click',()=&gt;orpp._handleError(new Error('Manueller Test-Stop')));document.querySelectorAll('.tab').forEach(tab=&gt;{tab.addEventListener('click',()=&gt;orpp.switchTab(tab.dataset.tab))});if(orpp.state.selectedRepo)orpp.loadRepoContent(orpp.state.selectedRepo);else if(repoList.length)orpp.loadRepoContent(repoList[0].full);setInterval(()=&gt;orpp._updateUI(),2000);console.log('✅ ORPP Dezentrales Netzwerk gestartet');console.log(📦 {orpp.peerNetwork.deviceId}`);});
+</script>
+</body>
+</html>

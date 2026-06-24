@@ -1,0 +1,24 @@
+import os, subprocess, json, time
+
+repo_dir = "/mnt/agents/output/pandora_complete/repos"
+
+Strategy: Use shell commands for everything to avoid kernel timeouts
+Step 1: Count all files in all repos
+print("=== COUNTING ALL FILES ===")
+result = subprocess.run(
+["find", repo_dir, "-type", "f", "|", "wc", "-l"],
+capture_output=True, text=True, timeout=10, shell=True
+)
+total_files = int(result.stdout.strip()) if result.stdout.strip().isdigit() else 0
+print(f"Total files: {total_files}")
+
+Step 2: Count by type
+print("\n=== COUNTING BY TYPE ===")
+for ext in [".py", ".js", ".ts", ".java", ".c", ".cpp", ".h", ".go", ".rs", ".md", ".json", ".xml", ".yaml", ".yml", ".sh", ".gradle", ".kt"]:
+result = subprocess.run(
+f"find {repo_dir} -type f -name '*{ext}' | wc -l",
+capture_output=True, text=True, timeout=10, shell=True
+)
+count = int(result.stdout.strip()) if result.stdout.strip().isdigit() else 0
+if count > 0:
+print(f" {ext}: {count} files")
